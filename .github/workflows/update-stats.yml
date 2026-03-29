@@ -2,32 +2,32 @@ name: Update Noles Stats
 
 on:
   schedule:
-      - cron: '0 12 * * *'  # Runs daily at 12:00 UTC = 8:00 AM Eastern
-        workflow_dispatch:        # Also allows manual "Run now" from GitHub
+    - cron: '0 12 * * *'  # Runs daily at 12:00 UTC = 8:00 AM Eastern
+  workflow_dispatch:        # Also allows manual "Run now" from GitHub
 
-        jobs:
-          update-stats:
-              runs-on: ubuntu-latest
+jobs:
+  update-stats:
+    runs-on: ubuntu-latest
 
-                  steps:
-                        - name: Check out repo
-                                uses: actions/checkout@v4
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
 
-                                      - name: Set up Python
-                                              uses: actions/setup-python@v5
-                                                      with:
-                                                                python-version: '3.11'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-                                                                      - name: Install dependencies
-                                                                              run: pip install openpyxl requests
+      - name: Install dependencies
+        run: pip install openpyxl requests
 
-                                                                                    - name: Run stats updater
-                                                                                            run: python noles_stats_updater.py
+      - name: Run stats updater
+        run: python noles_stats_updater.py
 
-                                                                                                  - name: Commit updated files
-                                                                                                          run: |
-                                                                                                                    git config --local user.email "action@github.com"
-                                                                                                                              git config --local user.name "GitHub Actions"
-                                                                                                                                        git add noles_in_the_pros.xlsx noles_dashboard.html player_id_cache.json
-                                                                                                                                                  git diff --staged --quiet || git commit -m "Auto-update stats $(date +'%Y-%m-%d')"
-                                                                                                                                                            git push
+      - name: Commit updated files
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Actions"
+          git add noles_in_the_pros.xlsx noles_dashboard.html player_id_cache.json
+          git diff --staged --quiet || git commit -m "Auto-update stats $(date +'%Y-%m-%d')"
+          git push
