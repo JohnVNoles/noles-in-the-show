@@ -1,8 +1,8 @@
 """
-Noles in the Pros — Stats Updater
+Noles in the Show — Stats Updater
 ==================================
 Pulls current season stats from the MLB Stats API for all players
-on the Noles in the Pros roster, then:
+on the Noles in the Show roster, then:
   1. Updates a "2026 Stats" sheet in noles_in_the_pros.xlsx
   2. Generates/refreshes noles_dashboard.html
 
@@ -26,8 +26,17 @@ MLB_API    = "https://statsapi.mlb.com/api/v1"
 
 # sport IDs: 1=MLB, 11=AAA, 12=AA, 13=High-A, 14=Low-A, 15=Rookie/Short, 16=Complex
 SPORT_IDS  = "1,11,12,13,14,15,16"
+LEVEL_SPORT_ID = {
+    "MLB":         1,
+    "AAA":         11,
+    "AA":          12,
+    "High-A":      13,
+    "Low-A":       14,
+    "Rookie":      15,
+    "Independent": None,
+}
 
-HEADERS = {"User-Agent": "NolesInThePros/1.0"}
+HEADERS = {"User-Agent": "NolesInTheShow/1.0"}
 
 # ── Player ID Cache ───────────────────────────────────────────────────────────
 def load_cache():
@@ -68,29 +77,27 @@ def find_player_id(name: str, cache: dict) -> int | None:
         return None
 
 # ── Stats Fetching ────────────────────────────────────────────────────────────
-def get_player_stats(person_id: int, season: int) -> dict:
-    """Fetch hitting and pitching stats for a player for the given season.
-    Falls back to the previous season if the current season has no data yet."""
+def get_player_stats(person_id: int, season: int, level: str = "") -> dict:
+    """Fetch hitting and pitching stats using the player's level to target
+    the correct sport ID (e.g. AAA=11, AA=12) for a clean single API call."""
     stats = {"hitting": {}, "pitching": {}, "season_used": season}
+    sport_id = LEVEL_SPORT_ID.get(level)
+    if sport_id is None:
+        return stats  # Independent league or unknown — no API data available
     for group in ("hitting", "pitching"):
-        for try_season in (season, season - 1):
-            try:
-                r = requests.get(
-                    f"{MLB_API}/people/{person_id}/stats",
-                    params={"stats": "season", "season": try_season,
-                            "group": group},
-                    headers=HEADERS, timeout=10
-                )
-                r.raise_for_status()
-                splits = r.json().get("stats", [])
-                if splits and splits[0].get("splits"):
-                    stats[group] = splits[0]["splits"][0].get("stat", {})
-                    if try_season != season:
-                        stats["season_used"] = try_season
-                        print(f"    ↩ {person_id} ({group}): no {season} data, using {try_season}")
-                    break  # found data, stop trying seasons
-            except Exception as e:
-                print(f"    ! Stats error for {person_id} ({group}) season {try_season}: {e}")
+        try:
+            r = requests.get(
+                f"{MLB_API}/people/{person_id}/stats",
+                params={"stats": "season", "season": season,
+                        "group": group, "sportId": sport_id},
+                headers=HEADERS, timeout=10
+            )
+            r.raise_for_status()
+            splits = r.json().get("stats", [])
+            if splits and splits[0].get("splits"):
+                stats[group] = splits[0]["splits"][0].get("stat", {})
+        except Exception as e:
+            print(f"    ! Stats error for {person_id} ({group}): {e}")
     return stats
 
 # ── Read Roster from Excel ────────────────────────────────────────────────────
@@ -356,7 +363,7 @@ def generate_html(player_data: list[dict]):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Noles in the Pros — {SEASON} Stats</title>
+<title>Noles in the Show — {SEASON} Stats</title>
 <style>
 :root {{
   --garnet: #782F40; --garnet-dark: #5a1f2d; --garnet-light: #9e4055;
@@ -383,7 +390,7 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
                 border-radius: 6px; font-size: 0.88rem; transition: all 0.15s; white-space: nowrap; }}
 .nav-links a:hover {{ background: rgba(255,255,255,0.12); color: white; }}
 .nav-links a.active {{ background: rgba(206,184,136,0.2); color: var(--gold); font-weight: 600; }}
-.nav-updated {{ color: rgba(255,255,255,0.45); font-size: 0.72rem; margin-left: auto; white-space: nowrap; }}
+.nav-updated {{ color: rgba(255,255,255,0.70); font-size: 0.72rem; margin-left: auto; white-space: nowrap; }}
 
 /* ── Hero ── */
 .hero {{ background: linear-gradient(135deg, var(--garnet-dark) 0%, var(--garnet) 55%, var(--garnet-light) 100%);
@@ -403,6 +410,9 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
 .hero-stat .num {{ color: var(--gold); font-size: 2rem; font-weight: 800; line-height: 1; }}
 .hero-stat .lbl {{ color: rgba(255,255,255,0.6); font-size: 0.72rem; text-transform: uppercase;
                     letter-spacing: 0.08em; margin-top: 4px; }}
+.hero-updated {{ margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(206,184,136,0.2);
+                  color: rgba(255,255,255,0.65); font-size: 0.8rem; letter-spacing: 0.03em; }}
+.hero-updated strong {{ color: var(--gold); font-weight: 600; }}
 
 /* ── Legacy accolades strip ── */
 .legacy {{ background: var(--garnet-dark); border-bottom: 3px solid var(--gold); }}
@@ -454,6 +464,9 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
              border-radius: 20px; cursor: pointer; font-size: 0.78rem;
              color: #555; transition: all .15s; font-weight: 600; }}
 .view-btn.active {{ background: var(--garnet); color: white; border-color: var(--garnet); }}
+.controls-updated {{ margin-left: 12px; font-size: 0.72rem; color: #999; white-space: nowrap;
+                      padding: 4px 0; display: flex; align-items: center; gap: 4px; }}
+.controls-updated::before {{ content: '↻'; font-size: 0.78rem; color: var(--garnet); }}
 
 /* ── Two-column roster layout ── */
 .roster-layout {{ display: flex; gap: 24px; align-items: flex-start;
@@ -504,6 +517,8 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
 .stat-lbl {{ font-size: 0.62rem; color: #999; text-transform: uppercase; margin-top: 1px; }}
 .no-data {{ grid-column: 1/-1; text-align: center; color: #bbb;
             font-size: 0.78rem; padding: 8px 0; font-style: italic; }}
+.season-note {{ text-align: center; font-size: 0.68rem; color: #aaa;
+                font-style: italic; padding: 2px 0 6px; }}
 
 /* ── List/Table view ── */
 .list-wrap {{ display: none; }}
@@ -592,7 +607,7 @@ footer a {{ color: var(--gold); text-decoration: none; }}
   <a href="#home" class="nav-brand">
     <div class="nav-logo">N</div>
     <div>
-      <div class="nav-title">Noles in the Pros</div>
+      <div class="nav-title">Noles in the Show</div>
       <div class="nav-sub">FSU Baseball Alumni Tracker</div>
     </div>
   </a>
@@ -616,6 +631,7 @@ footer a {{ color: var(--gold); text-decoration: none; }}
       <div class="hero-stat"><div class="num">{org_count}</div><div class="lbl">Organizations</div></div>
       <div class="hero-stat"><div class="num">{SEASON}</div><div class="lbl">Season</div></div>
     </div>
+    <div class="hero-updated">📅 Stats last updated: <strong>{updated} ET</strong></div>
   </div>
 </section>
 
@@ -677,6 +693,7 @@ footer a {{ color: var(--gold); text-decoration: none; }}
   <span class="controls-label">Level:</span>
   {level_btns}
   <input class="search-box" type="text" placeholder="Search player…" oninput="applySearch(this.value)">
+  <span class="controls-updated">Updated {updated} ET</span>
   <div class="view-toggle">
     <button class="view-btn active" id="btnCards" onclick="setView('cards')">⊞ Cards</button>
     <button class="view-btn" id="btnList"  onclick="setView('list')">≡ List</button>
@@ -713,15 +730,15 @@ footer a {{ color: var(--gold); text-decoration: none; }}
     <!-- Twitter feed -->
     <div class="sidebar-widget">
       <div class="sidebar-widget-hdr">
-        <span>𝕏 @NolesInThePros</span>
-        <a href="https://twitter.com/NolesInThePros" target="_blank">Follow</a>
+        <span>𝕏 @NolesInTheShow</span>
+        <a href="https://twitter.com/NolesInTheShow" target="_blank">Follow</a>
       </div>
       <a class="twitter-timeline"
          data-height="380"
          data-theme="light"
          data-chrome="noheader nofooter noborders"
-         href="https://twitter.com/NolesInThePros">
-        Tweets by @NolesInThePros
+         href="https://twitter.com/NolesInTheShow">
+        Tweets by @NolesInTheShow
       </a>
     </div>
 
@@ -767,12 +784,12 @@ footer a {{ color: var(--gold); text-decoration: none; }}
 
 <!-- About Section -->
 <div class="section-wrap" id="about" style="margin-bottom: 48px;">
-  <div class="section-title">About Noles in the Pros</div>
+  <div class="section-title">About Noles in the Show</div>
   <div class="about-box">
-    <p><strong>Noles in the Pros</strong> is a fan-run tracker dedicated to following Florida State University baseball alumni throughout their professional careers — from rookie ball all the way to the Major Leagues.</p>
+    <p><strong>Noles in the Show</strong> is a fan-run tracker dedicated to following Florida State University baseball alumni throughout their professional careers — from rookie ball all the way to the Major Leagues.</p>
     <p>Florida State has one of the most storied baseball programs in the country. Playing out of <strong>Dick Howser Stadium</strong> in Tallahassee, the Seminoles have made <strong>24 College World Series appearances</strong> and captured more than <strong>20 ACC Championships</strong>. The program has consistently produced professional talent, sending over <strong>350 players</strong> to the draft since the modern era began.</p>
     <p>This site pulls live stats directly from the MLB Stats API and refreshes regularly throughout the season. Stats reflect current-season performance across all levels of affiliated and independent professional baseball.</p>
-    <p style="font-size:0.82rem; color:#aaa;">Noles in the Pros is a fan site and is not affiliated with Florida State University or Major League Baseball. Data sourced from the MLB Stats API.</p>
+    <p style="font-size:0.82rem; color:#aaa;">Noles in the Show is a fan site and is not affiliated with Florida State University or Major League Baseball. Data sourced from the MLB Stats API.</p>
   </div>
 </div>
 
@@ -781,7 +798,7 @@ footer a {{ color: var(--gold); text-decoration: none; }}
 
 <!-- Footer -->
 <footer>
-  <p><strong style="color:white">Noles in the Pros</strong> · Fan site, not affiliated with FSU or MLB.</p>
+  <p><strong style="color:white">Noles in the Show</strong> · Fan site, not affiliated with FSU or MLB.</p>
   <p style="margin-top:6px;">Data sourced from <a href="https://statsapi.mlb.com">MLB Stats API</a> · {SEASON} Season</p>
 </footer>
 
@@ -862,7 +879,7 @@ function applyFilters() {{
 # ── Main ──────────────────────────────────────────────────────────────────────
 def main():
     print(f"\n{'='*55}")
-    print(f"  Noles in the Pros — Stats Updater  ({SEASON} Season)")
+    print(f"  Noles in the Show — Stats Updater  ({SEASON} Season)")
     print(f"{'='*55}\n")
 
     roster = read_roster()
@@ -878,7 +895,7 @@ def main():
 
         p["mlb_id"] = pid
         if pid:
-            raw_stats = get_player_stats(pid, SEASON)
+            raw_stats = get_player_stats(pid, SEASON, p.get("level", ""))
             pitcher = is_pitcher(p["position"])
             raw = raw_stats["pitching"] if pitcher else raw_stats["hitting"]
             p["stats_fmt"]    = format_pitching(raw) if pitcher else format_hitting(raw)
