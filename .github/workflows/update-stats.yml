@@ -24,6 +24,25 @@ jobs:
       - name: Run stats updater
         run: python noles_stats_updater.py
 
+      - name: Inject last-updated indicator
+        run: |
+          python3 - <<'PYEOF'
+          from datetime import datetime, timezone
+          ts = datetime.now(timezone.utc).strftime('%B %d, %Y at %I:%M %p')
+          with open('noles_dashboard.html', 'r') as f:
+              html = f.read()
+          if 'class="hero-updated"' not in html:
+              css = '.hero-updated{margin-top:16px;padding-top:14px;border-top:1px solid rgba(206,184,136,.2);color:rgba(255,255,255,.65);font-size:.8rem;letter-spacing:.03em}.hero-updated strong{color:var(--gold);font-weight:600}\n'
+              html = html.replace('</style>', css + '</style>', 1)
+              tag = '    <div class="hero-updated">Stats last updated: <strong>' + ts + ' UTC</strong></div>\n  </div>\n</section>'
+              html = html.replace('  </div>\n</section>', tag, 1)
+              with open('noles_dashboard.html', 'w') as f:
+                  f.write(html)
+              print('Injected: ' + ts)
+          else:
+              print('Already present, skipping')
+          PYEOF
+
       - name: Commit updated files
         run: |
           git config --local user.email "action@github.com"
