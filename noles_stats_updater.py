@@ -38,6 +38,40 @@ LEVEL_SPORT_ID = {
 
 HEADERS = {"User-Agent": "NolesInTheShow/1.0"}
 
+# ── MiLB Profile URLs (used for direct player ID extraction and clickable links) ──
+MILB_URLS = {
+    "Shane Drohan":       "https://www.milb.com/player/shane-drohan-675660",
+    "James Tibbs III":    "https://www.milb.com/player/james-tibbs-iii-696486",
+    "CJ Van Eyk":         "https://www.milb.com/player/cj-van-eyk-669310",
+    "Brandon Leibrandt":  "https://www.milb.com/player/brandon-leibrandt-605335",
+    "Drew Parrish":       "https://www.milb.com/player/drew-parrish-669283",
+    "DJ Stewart":         "https://www.milb.com/player/dj-stewart-621466",
+    "Jamie Arnold":       "https://www.milb.com/player/jamie-arnold-701364",
+    "Jackson Baumeister": "https://www.milb.com/player/jackson-baumeister-691765",
+    "Jack Anderson":      "https://www.milb.com/player/jack-anderson-681252",
+    "J.C. Flowers":       "https://www.milb.com/player/j-c-flowers-669001",
+    "Alex Lodise":        "https://www.milb.com/player/alex-lodise-822676",
+    "Marco Dinges":       "https://www.milb.com/player/marco-dinges-701392",
+    "Jaime Ferrer":       "https://www.milb.com/player/jaime-ferrer-695634",
+    "Carson Dorsey":      "https://www.milb.com/player/carson-dorsey-805955",
+    "Wyatt Crowell":      "https://www.milb.com/player/wyatt-crowell-694573",
+    "Gavin Adams":        "https://www.milb.com/player/gavin-adams-701400",
+    "Yoel Tejeda Jr.":    "https://www.milb.com/player/yoel-tejeda-jr-701347",
+    "Conner Whittaker":   "https://www.milb.com/player/conner-whittaker-701422",
+    "Bryce Hubbart":      "https://www.milb.com/player/bryce-hubbart-687114",
+    "Carson Montgomery":  "https://www.milb.com/player/carson-montgomery-691000",
+    "Colton Vincent":     "https://www.milb.com/player/colton-vincent-694294",
+    "Max Williams":       "https://www.milb.com/player/max-williams-703637",
+    "Drew Faurot":        "https://www.milb.com/player/drew-faurot-702656",
+    "Joey Volini":        "https://www.milb.com/player/joey-volini-804123",
+    "Cam Leiter":         "https://www.milb.com/player/cam-leiter-804942",
+    "Peyton Prescott":    "https://www.milb.com/player/peyton-prescott-807290",
+    "Evan Chrest":        "https://www.milb.com/player/evan-chrest-805971",
+    "Gage Harrelson":     "https://www.milb.com/player/gage-harrelson-702629",
+    "Jaxson West":        "https://www.milb.com/player/jaxson-west-702486",
+    "Maison Martinez":    "https://www.milb.com/player/maison-martinez-824506",
+}
+
 # ── Player ID Cache ───────────────────────────────────────────────────────────
 def load_cache():
     if CACHE_PATH.exists():
@@ -108,12 +142,12 @@ def read_roster() -> list[dict]:
     players = []
     for row in ws.iter_rows(min_row=2, max_row=ws.max_row, values_only=True):
         name, pos, org, level, team = row[0], row[1], row[2], row[3], row[4]
-        milb_url = row[10] if len(row) > 10 else None
+        milb_url = (row[10] if len(row) > 10 else None) or MILB_URLS.get(name, "")
         if name:
             players.append({
                 "name": name, "position": pos or "",
                 "org": org or "", "level": level or "",
-                "team": team or "", "milb_url": milb_url or ""
+                "team": team or "", "milb_url": milb_url
             })
     return players
 
