@@ -112,28 +112,31 @@ def find_player_id(name: str, cache: dict) -> int | None:
 
 # ── Stats Fetching ────────────────────────────────────────────────────────────
 def get_player_stats(person_id: int, season: int, level: str = "") -> dict:
-    """Fetch hitting and pitching stats using the player's level to target
-    the correct sport ID (e.g. AAA=11, AA=12) for a clean single API call."""
+    """Fetch hitting and pitching stats. Falls back to season-1 if current season has no data yet
+    (handles early-season when no games have been played for a given player)."""
     stats = {"hitting": {}, "pitching": {}, "season_used": season}
     sport_id = LEVEL_SPORT_ID.get(level)
     if sport_id is None:
         return stats  # Independent league or unknown — no API data available
     for group in ("hitting", "pitching"):
         try:
-            r = requests.get(
-                f"{MLB_API}/people/{person_id}/stats",
-                params={"stats": "season", "season": season,
-                        "group": group, "sportId": sport_id},
-                headers=HEADERS, timeout=10
-            )
-            r.raise_for_status()
-            splits = r.json().get("stats", [])
-            if splits and splits[0].get("splits"):
-                stats[group] = splits[0]["splits"][0].get("stat", {})
+            for yr in (season, season - 1):  # Try current year first, fall back to prior year
+                r = requests.get(
+                    f"{MLB_API}/people/{person_id}/stats",
+                    params={"stats": "season", "season": yr,
+                            "group": group, "sportId": sport_id},
+                    headers=HEADERS, timeout=10
+                )
+                r.raise_for_status()
+                splits = r.json().get("stats", [])
+                if splits and splits[0].get("splits"):
+                    stats[group] = splits[0]["splits"][0].get("stat", {})
+                    if yr != season:
+                        stats["season_used"] = yr  # Track that we used the fallback year
+                    break  # Got data, stop trying years
         except Exception as e:
-            print(f"    ! Stats error for {person_id} ({group}): {e}")
+            print(f"  ! Stats error for {person_id} ({group}): {e}")
     return stats
-
 # ── Read Roster from Excel ────────────────────────────────────────────────────
 def read_roster() -> list[dict]:
     import openpyxl
@@ -334,6 +337,9 @@ def generate_html(player_data: list[dict]):
         )
         no_data_msg = ('<div class="no-data">Season not started or not in MLB system</div>'
                        if not stats else "")
+    season_shown = p.get("season_shown", SEASON)
+    season_note = (f'<div class="season-note">† {season_shown} stats (season not yet started)</div>'
+                   if season_shown != SEASON and stats else "")
         org_line = (f'<div class="card-org">⬆ {p["org"]}</div>'
                     if lvl != "MLB" and p.get("org") else "")
         return f'''
@@ -347,7 +353,7 @@ def generate_html(player_data: list[dict]):
             </div>
           </div>
           <div class="card-level" style="color:{color}">{lvl}</div>
-          <div class="card-stats">{stats_html}{no_data_msg}</div>
+          <div class="card-stats">{stats_html}{no_data_msg}{season_note}</div>
         </div>'''
 
     cards_html = "\n".join(player_card(p) for p in sorted_players)
