@@ -48,10 +48,13 @@ jobs:
               print('Already present, skipping')
           PYEOF
 
+      - name: Sync index.html with dashboard
+        run: cp noles_dashboard.html index.html
+
       - name: Commit updated files
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Actions"
-          git add noles_in_the_pros.xlsx noles_dashboard.html player_id_cache.json
+          git add noles_in_the_pros.xlsx noles_dashboard.html index.html player_id_cache.json
           git diff --staged --quiet || git commit -m "Auto-update stats $(date +'%Y-%m-%d')"
           git push
