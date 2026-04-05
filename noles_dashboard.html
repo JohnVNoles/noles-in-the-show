@@ -187,8 +187,9 @@ td { padding: 10px 14px; vertical-align: middle; }
 
 /* ── Footer ── */
 footer { background: var(--garnet-dark); color: rgba(255,255,255,0.55);
-          text-align: center; padding: 22px 32px; font-size: 0.8rem; margin-top: 48px; }
+          text-align: center; padding: 28px 32px; font-size: 0.8rem; margin-top: 48px; }
 footer a { color: var(--gold); text-decoration: none; }
+footer a:hover { color: white; text-decoration: underline; }
 
 /* ── Responsive: Tablet (≤900px) ── */
 @media (max-width: 900px) {
@@ -257,7 +258,7 @@ footer a { color: var(--gold); text-decoration: none; }
     <a href="#news"   class="nav-link">News</a>
     <a href="#about"  class="nav-link">About</a>
   </div>
-  <span class="nav-updated">Updated April 05, 2026 at 10:57 AM</span>
+  <span class="nav-updated">Updated April 05, 2026 at 02:02 PM</span>
 </nav>
 
 <!-- Hero -->
@@ -271,7 +272,7 @@ footer a { color: var(--gold); text-decoration: none; }
       <div class="hero-stat"><div class="num">24</div><div class="lbl">Organizations</div></div>
       <div class="hero-stat"><div class="num">2026</div><div class="lbl">Season</div></div>
     </div>
-    <div class="hero-updated">📅 Stats last updated: <strong>April 05, 2026 at 10:57 AM ET</strong></div>
+    <div class="hero-updated">📅 Stats last updated: <strong>April 05, 2026 at 08:02 AM ET</strong></div>
   </div>
 </section>
 
@@ -328,6 +329,16 @@ footer a { color: var(--gold); text-decoration: none; }
   </div>
 </div>
 
+<!-- Ad Unit: Leaderboard between news and roster -->
+<div style="max-width:1200px; margin:0 auto 8px; padding:0 32px;">
+  <div style="background:#f8f5f0; border:2px dashed #e0d0b8; border-radius:8px; padding:14px; text-align:center; color:#b0a080; font-size:0.72rem; letter-spacing:0.05em; text-transform:uppercase; min-height:90px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;">
+    <div style="font-weight:700; color:#c9a96e;">Advertisement</div>
+    <div style="font-size:0.65rem; color:#bbb;">Google AdSense · 728×90 Leaderboard</div>
+    <!-- Replace this block with your AdSense unit code -->
+    <!-- <ins class="adsbygoogle" style="display:inline-block;width:728px;height:90px" data-ad-client="ca-pub-XXXXXXX" data-ad-slot="XXXXXXX"></ins> -->
+  </div>
+</div>
+
 <!-- Controls (sticky) -->
 <div class="controls" id="roster">
   <span class="controls-label">Level:</span>
@@ -341,7 +352,7 @@ footer a { color: var(--gold); text-decoration: none; }
 <button class="filter-btn" data-color="#5a5a5a" onclick="filterLevel('Independent',this)">Independent</button>
 
   <input class="search-box" type="text" placeholder="Search player…" oninput="applySearch(this.value)">
-  <span class="controls-updated">Updated April 05, 2026 at 10:57 AM ET</span>
+  <span class="controls-updated">Updated April 05, 2026 at 02:02 PM ET</span>
   <div class="view-toggle">
     <button class="view-btn active" id="btnCards" onclick="setView('cards')">⊞ Cards</button>
     <button class="view-btn" id="btnList"  onclick="setView('list')">≡ List</button>
@@ -365,7 +376,7 @@ footer a { color: var(--gold); text-decoration: none; }
             </div>
           </div>
           <div class="card-level" style="color:#782F40">MLB</div>
-          <div class="card-stats"><div class="stat"><div class="stat-val">.121</div><div class="stat-lbl">AVG</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">HR</div></div><div class="stat"><div class="stat-val">4</div><div class="stat-lbl">RBI</div></div><div class="stat"><div class="stat-val">.368</div><div class="stat-lbl">OPS</div></div><div class="stat"><div class="stat-val">.216</div><div class="stat-lbl">OBP</div></div><div class="stat"><div class="stat-val">9</div><div class="stat-lbl">G</div></div><div class="stat"><div class="stat-val">33</div><div class="stat-lbl">AB</div></div><div class="stat"><div class="stat-val">4</div><div class="stat-lbl">H</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">R</div></div><div class="stat"><div class="stat-val">1</div><div class="stat-lbl">SB</div></div></div>
+          <div class="card-stats"><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">AVG</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">HR</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">RBI</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">OPS</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">OBP</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">G</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">AB</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">H</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">R</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">SB</div></div></div>
         </div>
 
         <div class="card" data-level="MLB" data-name="luke weaver">
@@ -378,7 +389,7 @@ footer a { color: var(--gold); text-decoration: none; }
             </div>
           </div>
           <div class="card-level" style="color:#782F40">MLB</div>
-          <div class="card-stats"><div class="stat"><div class="stat-val">0.00</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">3.0</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">2</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">2</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">1.00</div><div class="stat-lbl">WHIP</div></div></div>
+          <div class="card-stats"><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">WHIP</div></div></div>
         </div>
 
         <div class="card" data-level="MLB" data-name="tyler holton">
@@ -391,7 +402,7 @@ footer a { color: var(--gold); text-decoration: none; }
             </div>
           </div>
           <div class="card-level" style="color:#782F40">MLB</div>
-          <div class="card-stats"><div class="stat"><div class="stat-val">0.00</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">3.2</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">2</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">3</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">1.09</div><div class="stat-lbl">WHIP</div></div></div>
+          <div class="card-stats"><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">WHIP</div></div></div>
         </div>
 
         <div class="card" data-level="MLB" data-name="parker messick">
@@ -404,7 +415,7 @@ footer a { color: var(--gold); text-decoration: none; }
             </div>
           </div>
           <div class="card-level" style="color:#782F40">MLB</div>
-          <div class="card-stats"><div class="stat"><div class="stat-val">0.00</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">6.0</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">1</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">5</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">0.83</div><div class="stat-lbl">WHIP</div></div></div>
+          <div class="card-stats"><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">WHIP</div></div></div>
         </div>
 
         <div class="card" data-level="MLB" data-name="cole sands">
@@ -417,7 +428,7 @@ footer a { color: var(--gold); text-decoration: none; }
             </div>
           </div>
           <div class="card-level" style="color:#782F40">MLB</div>
-          <div class="card-stats"><div class="stat"><div class="stat-val">5.40</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">1.2</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">1</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">2</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">1</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">1.80</div><div class="stat-lbl">WHIP</div></div></div>
+          <div class="card-stats"><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">WHIP</div></div></div>
         </div>
 
         <div class="card" data-level="MLB" data-name="cam smith">
@@ -430,7 +441,7 @@ footer a { color: var(--gold); text-decoration: none; }
             </div>
           </div>
           <div class="card-level" style="color:#782F40">MLB</div>
-          <div class="card-stats"><div class="stat"><div class="stat-val">.250</div><div class="stat-lbl">AVG</div></div><div class="stat"><div class="stat-val">2</div><div class="stat-lbl">HR</div></div><div class="stat"><div class="stat-val">2</div><div class="stat-lbl">RBI</div></div><div class="stat"><div class="stat-val">.882</div><div class="stat-lbl">OPS</div></div><div class="stat"><div class="stat-val">.382</div><div class="stat-lbl">OBP</div></div><div class="stat"><div class="stat-val">9</div><div class="stat-lbl">G</div></div><div class="stat"><div class="stat-val">28</div><div class="stat-lbl">AB</div></div><div class="stat"><div class="stat-val">7</div><div class="stat-lbl">H</div></div><div class="stat"><div class="stat-val">7</div><div class="stat-lbl">R</div></div><div class="stat"><div class="stat-val">2</div><div class="stat-lbl">SB</div></div></div>
+          <div class="card-stats"><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">AVG</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">HR</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">RBI</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">OPS</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">OBP</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">G</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">AB</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">H</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">R</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">SB</div></div></div>
         </div>
 
         <div class="card" data-level="MLB" data-name="taylor walls">
@@ -456,7 +467,7 @@ footer a { color: var(--gold); text-decoration: none; }
             </div>
           </div>
           <div class="card-level" style="color:#B5451B">AAA</div>
-          <div class="card-stats"><div class="stat"><div class="stat-val">5.40</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">3.1</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">6</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">4</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">2.10</div><div class="stat-lbl">WHIP</div></div></div>
+          <div class="card-stats"><div class="stat"><div class="stat-val">5.40</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">3.1</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">6</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">2.10</div><div class="stat-lbl">WHIP</div></div>
         </div>
 
         <div class="card" data-level="AAA" data-name="james tibbs iii">
@@ -469,7 +480,7 @@ footer a { color: var(--gold); text-decoration: none; }
             </div>
           </div>
           <div class="card-level" style="color:#B5451B">AAA</div>
-          <div class="card-stats"><div class="stat"><div class="stat-val">.514</div><div class="stat-lbl">AVG</div></div><div class="stat"><div class="stat-val">7</div><div class="stat-lbl">HR</div></div><div class="stat"><div class="stat-val">13</div><div class="stat-lbl">RBI</div></div><div class="stat"><div class="stat-val">1.850</div><div class="stat-lbl">OPS</div></div><div class="stat"><div class="stat-val">.564</div><div class="stat-lbl">OBP</div></div><div class="stat"><div class="stat-val">8</div><div class="stat-lbl">G</div></div><div class="stat"><div class="stat-val">35</div><div class="stat-lbl">AB</div></div><div class="stat"><div class="stat-val">18</div><div class="stat-lbl">H</div></div><div class="stat"><div class="stat-val">15</div><div class="stat-lbl">R</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">SB</div></div></div>
+          <div class="card-stats"><div class="stat"><div class="stat-val">.514</div><div class="stat-lbl">AVG</div></div><div class="stat"><div class="stat-val">7</div><div class="stat-lbl">HR</div></div><div class="stat"><div class="stat-val">13</div><div class="stat-lbl">RBI</div></div><div class="stat"><div class="stat-val">1.850</div><div class="stat-lbl">OPS</div></div><div class="stat"><div class="stat-val">.564</div><div class="stat-lbl">OBP</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">G</div></div><div class="stat"><div class="stat-val">35</div><div class="stat-lbl">AB</div></div><div class="stat"><div class="stat-val">18</div><div class="stat-lbl">H</div></div><div class="stat"><div class="stat-val">15</div><div class="stat-lbl">R</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">SB</div></div>
         </div>
 
         <div class="card" data-level="AAA" data-name="cj van eyk">
@@ -482,7 +493,7 @@ footer a { color: var(--gold); text-decoration: none; }
             </div>
           </div>
           <div class="card-level" style="color:#B5451B">AAA</div>
-          <div class="card-stats"><div class="stat"><div class="stat-val">2.25</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">4.0</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">5</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">1</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">1.75</div><div class="stat-lbl">WHIP</div></div></div>
+          <div class="card-stats"><div class="stat"><div class="stat-val">2.25</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">4.0</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">5</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">1.75</div><div class="stat-lbl">WHIP</div></div>
         </div>
 
         <div class="card" data-level="AAA" data-name="brandon leibrandt">
@@ -495,7 +506,7 @@ footer a { color: var(--gold); text-decoration: none; }
             </div>
           </div>
           <div class="card-level" style="color:#B5451B">AAA</div>
-          <div class="card-stats"><div class="stat"><div class="stat-val">8.31</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">4.1</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">3</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">1</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">2.08</div><div class="stat-lbl">WHIP</div></div></div>
+          <div class="card-stats"><div class="stat"><div class="stat-val">10.57</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">7.2</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">1</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">9</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">2.48</div><div class="stat-lbl">WHIP</div></div>
         </div>
 
         <div class="card" data-level="AAA" data-name="drew parrish">
@@ -534,7 +545,7 @@ footer a { color: var(--gold); text-decoration: none; }
             </div>
           </div>
           <div class="card-level" style="color:#CEB888">AA</div>
-          <div class="card-stats"><div class="stat"><div class="stat-val">3.60</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">5.0</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">6</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">2</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">1.60</div><div class="stat-lbl">WHIP</div></div></div>
+          <div class="card-stats"><div class="stat"><div class="stat-val">3.60</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">5.0</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">6</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">1.60</div><div class="stat-lbl">WHIP</div></div>
         </div>
 
         <div class="card" data-level="AA" data-name="jackson baumeister">
@@ -560,7 +571,7 @@ footer a { color: var(--gold); text-decoration: none; }
             </div>
           </div>
           <div class="card-level" style="color:#CEB888">AA</div>
-          <div class="card-stats"><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">WHIP</div></div></div>
+          <div class="card-stats"><div class="stat"><div class="stat-val">9.82</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">3.2</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">2</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">1.91</div><div class="stat-lbl">WHIP</div></div>
         </div>
 
         <div class="card" data-level="AA" data-name="j.c. flowers">
@@ -576,17 +587,17 @@ footer a { color: var(--gold); text-decoration: none; }
           <div class="card-stats"><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">WHIP</div></div></div>
         </div>
 
-        <div class="card" data-level="High-A" data-name="alex lodise">
-          <div class="card-header" style="background:#4A7C59;color:white">
+        <div class="card" data-level="Low-A" data-name="alex lodise">
+          <div class="card-header" style="background:#2C5F8A;color:white">
             <img class="card-photo" src="https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_120,q_auto:best/v1/people/822676/headshot/67/current" alt="Alex Lodise" onerror="this.style.display='none'">
             <div class="card-info">
               <div class="card-name"><a href="https://www.milb.com/player/alex-lodise-822676" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">Alex Lodise</a></div>
-              <div class="card-meta">SS · Rome Emperors</div>
+              <div class="card-meta">SS · Augusta GreenJackets</div>
               <div class="card-org">⬆ Atlanta Braves</div>
             </div>
           </div>
-          <div class="card-level" style="color:#4A7C59">High-A</div>
-          <div class="card-stats"><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">AVG</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">HR</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">RBI</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">OPS</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">OBP</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">G</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">AB</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">H</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">R</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">SB</div></div></div>
+          <div class="card-level" style="color:#2C5F8A">Low-A</div>
+          <div class="card-stats"><div class="stat"><div class="stat-val">.444</div><div class="stat-lbl">AVG</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">HR</div></div><div class="stat"><div class="stat-val">1</div><div class="stat-lbl">RBI</div></div><div class="stat"><div class="stat-val">.888</div><div class="stat-lbl">OPS</div></div><div class="stat"><div class="stat-val">.444</div><div class="stat-lbl">OBP</div></div><div class="stat"><div class="stat-val">2</div><div class="stat-lbl">G</div></div><div class="stat"><div class="stat-val">9</div><div class="stat-lbl">AB</div></div><div class="stat"><div class="stat-val">4</div><div class="stat-lbl">H</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">R</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">SB</div></div></div>
         </div>
 
         <div class="card" data-level="High-A" data-name="marco dinges">
@@ -599,7 +610,7 @@ footer a { color: var(--gold); text-decoration: none; }
             </div>
           </div>
           <div class="card-level" style="color:#4A7C59">High-A</div>
-          <div class="card-stats"><div class="stat"><div class="stat-val">.500</div><div class="stat-lbl">AVG</div></div><div class="stat"><div class="stat-val">1</div><div class="stat-lbl">HR</div></div><div class="stat"><div class="stat-val">2</div><div class="stat-lbl">RBI</div></div><div class="stat"><div class="stat-val">2.667</div><div class="stat-lbl">OPS</div></div><div class="stat"><div class="stat-val">.667</div><div class="stat-lbl">OBP</div></div><div class="stat"><div class="stat-val">1</div><div class="stat-lbl">G</div></div><div class="stat"><div class="stat-val">2</div><div class="stat-lbl">AB</div></div><div class="stat"><div class="stat-val">1</div><div class="stat-lbl">H</div></div><div class="stat"><div class="stat-val">2</div><div class="stat-lbl">R</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">SB</div></div></div>
+          <div class="card-stats"><div class="stat"><div class="stat-val">.500</div><div class="stat-lbl">AVG</div></div><div class="stat"><div class="stat-val">1</div><div class="stat-lbl">HR</div></div><div class="stat"><div class="stat-val">2</div><div class="stat-lbl">RBI</div></div><div class="stat"><div class="stat-val">2.667</div><div class="stat-lbl">OPS</div></div><div class="stat"><div class="stat-val">.667</div><div class="stat-lbl">OBP</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">G</div></div><div class="stat"><div class="stat-val">2</div><div class="stat-lbl">AB</div></div><div class="stat"><div class="stat-val">1</div><div class="stat-lbl">H</div></div><div class="stat"><div class="stat-val">2</div><div class="stat-lbl">R</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">SB</div></div>
         </div>
 
         <div class="card" data-level="High-A" data-name="jaime ferrer">
@@ -612,7 +623,7 @@ footer a { color: var(--gold); text-decoration: none; }
             </div>
           </div>
           <div class="card-level" style="color:#4A7C59">High-A</div>
-          <div class="card-stats"><div class="stat"><div class="stat-val">.429</div><div class="stat-lbl">AVG</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">HR</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">RBI</div></div><div class="stat"><div class="stat-val">.929</div><div class="stat-lbl">OPS</div></div><div class="stat"><div class="stat-val">.500</div><div class="stat-lbl">OBP</div></div><div class="stat"><div class="stat-val">2</div><div class="stat-lbl">G</div></div><div class="stat"><div class="stat-val">7</div><div class="stat-lbl">AB</div></div><div class="stat"><div class="stat-val">3</div><div class="stat-lbl">H</div></div><div class="stat"><div class="stat-val">1</div><div class="stat-lbl">R</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">SB</div></div></div>
+          <div class="card-stats"><div class="stat"><div class="stat-val">.455</div><div class="stat-lbl">AVG</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">HR</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">RBI</div></div><div class="stat"><div class="stat-val">.993</div><div class="stat-lbl">OPS</div></div><div class="stat"><div class="stat-val">.538</div><div class="stat-lbl">OBP</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">G</div></div><div class="stat"><div class="stat-val">11</div><div class="stat-lbl">AB</div></div><div class="stat"><div class="stat-val">5</div><div class="stat-lbl">H</div></div><div class="stat"><div class="stat-val">2</div><div class="stat-lbl">R</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">SB</div></div>
         </div>
 
         <div class="card" data-level="High-A" data-name="carson dorsey">
@@ -638,7 +649,7 @@ footer a { color: var(--gold); text-decoration: none; }
             </div>
           </div>
           <div class="card-level" style="color:#4A7C59">High-A</div>
-          <div class="card-stats"><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">WHIP</div></div></div>
+          <div class="card-stats"><div class="stat"><div class="stat-val">0.00</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">3.0</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">1</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">3</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">1.00</div><div class="stat-lbl">WHIP</div></div>
         </div>
 
         <div class="card" data-level="Low-A" data-name="gavin adams">
@@ -651,7 +662,7 @@ footer a { color: var(--gold); text-decoration: none; }
             </div>
           </div>
           <div class="card-level" style="color:#2C5F8A">Low-A</div>
-          <div class="card-stats"><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">AVG</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">HR</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">RBI</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">OPS</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">OBP</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">G</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">AB</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">H</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">R</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">SB</div></div></div>
+          <div class="card-stats"><div class="stat"><div class="stat-val">0.00</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">1.0</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">2</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">3.00</div><div class="stat-lbl">WHIP</div></div>
         </div>
 
         <div class="card" data-level="Low-A" data-name="yoel tejeda jr.">
@@ -742,7 +753,7 @@ footer a { color: var(--gold); text-decoration: none; }
             </div>
           </div>
           <div class="card-level" style="color:#6B4C93">Rookie</div>
-          <div class="card-stats"><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">AVG</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">HR</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">RBI</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">OPS</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">OBP</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">G</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">AB</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">H</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">R</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">SB</div></div></div>
+          <div class="card-stats"><div class="stat"><div class="stat-val">.000</div><div class="stat-lbl">AVG</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">HR</div></div><div class="stat"><div class="stat-val">1</div><div class="stat-lbl">RBI</div></div><div class="stat"><div class="stat-val">.250</div><div class="stat-lbl">OPS</div></div><div class="stat"><div class="stat-val">.250</div><div class="stat-lbl">OBP</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">G</div></div><div class="stat"><div class="stat-val">3</div><div class="stat-lbl">AB</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">H</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">R</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">SB</div></div>
         </div>
 
         <div class="card" data-level="Rookie" data-name="joey volini">
@@ -758,17 +769,17 @@ footer a { color: var(--gold); text-decoration: none; }
           <div class="card-stats"><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">WHIP</div></div></div>
         </div>
 
-        <div class="card" data-level="Rookie" data-name="cam leiter">
-          <div class="card-header" style="background:#6B4C93;color:white">
+        <div class="card" data-level="Low-A" data-name="cam leiter">
+          <div class="card-header" style="background:#2C5F8A;color:white">
             <img class="card-photo" src="https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_120,q_auto:best/v1/people/804942/headshot/67/current" alt="Cam Leiter" onerror="this.style.display='none'">
             <div class="card-info">
               <div class="card-name"><a href="https://www.milb.com/player/cam-leiter-804942" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">Cam Leiter</a></div>
-              <div class="card-meta">RHP · ACL/AZL</div>
+              <div class="card-meta">RHP · Ontario Tower Buzzers</div>
               <div class="card-org">⬆ Los Angeles Dodgers</div>
             </div>
           </div>
-          <div class="card-level" style="color:#6B4C93">Rookie</div>
-          <div class="card-stats"><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">WHIP</div></div></div>
+          <div class="card-level" style="color:#2C5F8A">Low-A</div>
+          <div class="card-stats"><div class="stat"><div class="stat-val">0.00</div><div class="stat-lbl">ERA</div></div><div class="stat"><div class="stat-val">3.0</div><div class="stat-lbl">IP</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">W</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">L</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">SV</div></div><div class="stat"><div class="stat-val">3</div><div class="stat-lbl">K</div></div><div class="stat"><div class="stat-val">1</div><div class="stat-lbl">BB</div></div><div class="stat"><div class="stat-val">0.33</div><div class="stat-lbl">WHIP</div></div></div>
         </div>
 
         <div class="card" data-level="Rookie" data-name="peyton prescott">
@@ -820,7 +831,7 @@ footer a { color: var(--gold); text-decoration: none; }
             </div>
           </div>
           <div class="card-level" style="color:#6B4C93">Rookie</div>
-          <div class="card-stats"><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">AVG</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">HR</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">RBI</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">OPS</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">OBP</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">G</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">AB</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">H</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">R</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">SB</div></div></div>
+          <div class="card-stats"><div class="stat"><div class="stat-val">.333</div><div class="stat-lbl">AVG</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">HR</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">RBI</div></div><div class="stat"><div class="stat-val">.666</div><div class="stat-lbl">OPS</div></div><div class="stat"><div class="stat-val">.333</div><div class="stat-lbl">OBP</div></div><div class="stat"><div class="stat-val">—</div><div class="stat-lbl">G</div></div><div class="stat"><div class="stat-val">3</div><div class="stat-lbl">AB</div></div><div class="stat"><div class="stat-val">1</div><div class="stat-lbl">H</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">R</div></div><div class="stat"><div class="stat-val">0</div><div class="stat-lbl">SB</div></div>
         </div>
 
         <div class="card" data-level="Rookie" data-name="maison martinez">
@@ -893,9 +904,9 @@ footer a { color: var(--gold); text-decoration: none; }
           <td><span class="lvl-badge" style="background:#782F40;color:white">MLB</span></td>
           <td class="td-team">Seattle Mariners</td>
           <td class="td-org">—</td>
-          <td class="td-stat"><span class="stat-lbl-sm">AVG</span> .121</td>
-          <td class="td-stat"><span class="stat-lbl-sm">HR</span> 0</td>
-          <td class="td-stat"><span class="stat-lbl-sm">OPS</span> .368</td>
+          <td class="td-stat"><span class="stat-lbl-sm">AVG</span> —</td>
+          <td class="td-stat"><span class="stat-lbl-sm">HR</span> —</td>
+          <td class="td-stat"><span class="stat-lbl-sm">OPS</span> —</td>
         </tr>
 
         <tr data-level="MLB" data-name="luke weaver">
@@ -906,9 +917,9 @@ footer a { color: var(--gold); text-decoration: none; }
           <td><span class="lvl-badge" style="background:#782F40;color:white">MLB</span></td>
           <td class="td-team">New York Mets</td>
           <td class="td-org">—</td>
-          <td class="td-stat"><span class="stat-lbl-sm">ERA</span> 0.00</td>
-          <td class="td-stat"><span class="stat-lbl-sm">IP</span> 3.0</td>
-          <td class="td-stat"><span class="stat-lbl-sm">WHIP</span> 1.00</td>
+          <td class="td-stat"><span class="stat-lbl-sm">ERA</span> —</td>
+          <td class="td-stat"><span class="stat-lbl-sm">IP</span> —</td>
+          <td class="td-stat"><span class="stat-lbl-sm">WHIP</span> —</td>
         </tr>
 
         <tr data-level="MLB" data-name="tyler holton">
@@ -919,9 +930,9 @@ footer a { color: var(--gold); text-decoration: none; }
           <td><span class="lvl-badge" style="background:#782F40;color:white">MLB</span></td>
           <td class="td-team">Detroit Tigers</td>
           <td class="td-org">—</td>
-          <td class="td-stat"><span class="stat-lbl-sm">ERA</span> 0.00</td>
-          <td class="td-stat"><span class="stat-lbl-sm">IP</span> 3.2</td>
-          <td class="td-stat"><span class="stat-lbl-sm">WHIP</span> 1.09</td>
+          <td class="td-stat"><span class="stat-lbl-sm">ERA</span> —</td>
+          <td class="td-stat"><span class="stat-lbl-sm">IP</span> —</td>
+          <td class="td-stat"><span class="stat-lbl-sm">WHIP</span> —</td>
         </tr>
 
         <tr data-level="MLB" data-name="parker messick">
@@ -932,9 +943,9 @@ footer a { color: var(--gold); text-decoration: none; }
           <td><span class="lvl-badge" style="background:#782F40;color:white">MLB</span></td>
           <td class="td-team">Cleveland Guardians</td>
           <td class="td-org">—</td>
-          <td class="td-stat"><span class="stat-lbl-sm">ERA</span> 0.00</td>
-          <td class="td-stat"><span class="stat-lbl-sm">IP</span> 6.0</td>
-          <td class="td-stat"><span class="stat-lbl-sm">WHIP</span> 0.83</td>
+          <td class="td-stat"><span class="stat-lbl-sm">ERA</span> —</td>
+          <td class="td-stat"><span class="stat-lbl-sm">IP</span> —</td>
+          <td class="td-stat"><span class="stat-lbl-sm">WHIP</span> —</td>
         </tr>
 
         <tr data-level="MLB" data-name="cole sands">
@@ -945,9 +956,9 @@ footer a { color: var(--gold); text-decoration: none; }
           <td><span class="lvl-badge" style="background:#782F40;color:white">MLB</span></td>
           <td class="td-team">Minnesota Twins</td>
           <td class="td-org">—</td>
-          <td class="td-stat"><span class="stat-lbl-sm">ERA</span> 5.40</td>
-          <td class="td-stat"><span class="stat-lbl-sm">IP</span> 1.2</td>
-          <td class="td-stat"><span class="stat-lbl-sm">WHIP</span> 1.80</td>
+          <td class="td-stat"><span class="stat-lbl-sm">ERA</span> —</td>
+          <td class="td-stat"><span class="stat-lbl-sm">IP</span> —</td>
+          <td class="td-stat"><span class="stat-lbl-sm">WHIP</span> —</td>
         </tr>
 
         <tr data-level="MLB" data-name="cam smith">
@@ -958,9 +969,9 @@ footer a { color: var(--gold); text-decoration: none; }
           <td><span class="lvl-badge" style="background:#782F40;color:white">MLB</span></td>
           <td class="td-team">Houston Astros</td>
           <td class="td-org">—</td>
-          <td class="td-stat"><span class="stat-lbl-sm">AVG</span> .250</td>
-          <td class="td-stat"><span class="stat-lbl-sm">HR</span> 2</td>
-          <td class="td-stat"><span class="stat-lbl-sm">OPS</span> .882</td>
+          <td class="td-stat"><span class="stat-lbl-sm">AVG</span> —</td>
+          <td class="td-stat"><span class="stat-lbl-sm">HR</span> —</td>
+          <td class="td-stat"><span class="stat-lbl-sm">OPS</span> —</td>
         </tr>
 
         <tr data-level="MLB" data-name="taylor walls">
@@ -1023,9 +1034,9 @@ footer a { color: var(--gold); text-decoration: none; }
           <td><span class="lvl-badge" style="background:#B5451B;color:white">AAA</span></td>
           <td class="td-team">Louisville Bats</td>
           <td class="td-org">Cincinnati Reds</td>
-          <td class="td-stat"><span class="stat-lbl-sm">ERA</span> 8.31</td>
-          <td class="td-stat"><span class="stat-lbl-sm">IP</span> 4.1</td>
-          <td class="td-stat"><span class="stat-lbl-sm">WHIP</span> 2.08</td>
+          <td class="td-stat"><span class="stat-lbl-sm">ERA</span> 10.57</td>
+          <td class="td-stat"><span class="stat-lbl-sm">IP</span> 7.2</td>
+          <td class="td-stat"><span class="stat-lbl-sm">WHIP</span> 2.48</td>
         </tr>
 
         <tr data-level="AAA" data-name="drew parrish">
@@ -1088,9 +1099,9 @@ footer a { color: var(--gold); text-decoration: none; }
           <td><span class="lvl-badge" style="background:#CEB888;color:#333">AA</span></td>
           <td class="td-team">Portland Sea Dogs</td>
           <td class="td-org">Boston Red Sox</td>
-          <td class="td-stat"><span class="stat-lbl-sm">ERA</span> —</td>
-          <td class="td-stat"><span class="stat-lbl-sm">IP</span> —</td>
-          <td class="td-stat"><span class="stat-lbl-sm">WHIP</span> —</td>
+          <td class="td-stat"><span class="stat-lbl-sm">ERA</span> 9.82</td>
+          <td class="td-stat"><span class="stat-lbl-sm">IP</span> 3.2</td>
+          <td class="td-stat"><span class="stat-lbl-sm">WHIP</span> 1.91</td>
         </tr>
 
         <tr data-level="AA" data-name="j.c. flowers">
@@ -1114,9 +1125,9 @@ footer a { color: var(--gold); text-decoration: none; }
           <td><span class="lvl-badge" style="background:#4A7C59;color:white">High-A</span></td>
           <td class="td-team">Rome Emperors</td>
           <td class="td-org">Atlanta Braves</td>
-          <td class="td-stat"><span class="stat-lbl-sm">AVG</span> —</td>
-          <td class="td-stat"><span class="stat-lbl-sm">HR</span> —</td>
-          <td class="td-stat"><span class="stat-lbl-sm">OPS</span> —</td>
+          <td class="td-stat"><span class="stat-lbl-sm">AVG</span> .444</td>
+          <td class="td-stat"><span class="stat-lbl-sm">HR</span> 0</td>
+          <td class="td-stat"><span class="stat-lbl-sm">OPS</span> .888</td>
         </tr>
 
         <tr data-level="High-A" data-name="marco dinges">
@@ -1140,9 +1151,9 @@ footer a { color: var(--gold); text-decoration: none; }
           <td><span class="lvl-badge" style="background:#4A7C59;color:white">High-A</span></td>
           <td class="td-team">Cedar Rapids Kernels</td>
           <td class="td-org">Minnesota Twins</td>
-          <td class="td-stat"><span class="stat-lbl-sm">AVG</span> .429</td>
+          <td class="td-stat"><span class="stat-lbl-sm">AVG</span> .455</td>
           <td class="td-stat"><span class="stat-lbl-sm">HR</span> 0</td>
-          <td class="td-stat"><span class="stat-lbl-sm">OPS</span> .929</td>
+          <td class="td-stat"><span class="stat-lbl-sm">OPS</span> .993</td>
         </tr>
 
         <tr data-level="High-A" data-name="carson dorsey">
@@ -1166,9 +1177,9 @@ footer a { color: var(--gold); text-decoration: none; }
           <td><span class="lvl-badge" style="background:#4A7C59;color:white">High-A</span></td>
           <td class="td-team">Great Lakes Loons</td>
           <td class="td-org">Los Angeles Dodgers</td>
-          <td class="td-stat"><span class="stat-lbl-sm">ERA</span> —</td>
-          <td class="td-stat"><span class="stat-lbl-sm">IP</span> —</td>
-          <td class="td-stat"><span class="stat-lbl-sm">WHIP</span> —</td>
+          <td class="td-stat"><span class="stat-lbl-sm">ERA</span> 0.00</td>
+          <td class="td-stat"><span class="stat-lbl-sm">IP</span> 3.0</td>
+          <td class="td-stat"><span class="stat-lbl-sm">WHIP</span> 1.00</td>
         </tr>
 
         <tr data-level="Low-A" data-name="gavin adams">
@@ -1270,9 +1281,9 @@ footer a { color: var(--gold); text-decoration: none; }
           <td><span class="lvl-badge" style="background:#6B4C93;color:white">Rookie</span></td>
           <td class="td-team">FCL/Jupiter</td>
           <td class="td-org">Miami Marlins</td>
-          <td class="td-stat"><span class="stat-lbl-sm">AVG</span> —</td>
-          <td class="td-stat"><span class="stat-lbl-sm">HR</span> —</td>
-          <td class="td-stat"><span class="stat-lbl-sm">OPS</span> —</td>
+          <td class="td-stat"><span class="stat-lbl-sm">AVG</span> .000</td>
+          <td class="td-stat"><span class="stat-lbl-sm">HR</span> 0</td>
+          <td class="td-stat"><span class="stat-lbl-sm">OPS</span> .250</td>
         </tr>
 
         <tr data-level="Rookie" data-name="joey volini">
@@ -1296,9 +1307,9 @@ footer a { color: var(--gold); text-decoration: none; }
           <td><span class="lvl-badge" style="background:#6B4C93;color:white">Rookie</span></td>
           <td class="td-team">ACL/AZL</td>
           <td class="td-org">Los Angeles Dodgers</td>
-          <td class="td-stat"><span class="stat-lbl-sm">ERA</span> —</td>
-          <td class="td-stat"><span class="stat-lbl-sm">IP</span> —</td>
-          <td class="td-stat"><span class="stat-lbl-sm">WHIP</span> —</td>
+          <td class="td-stat"><span class="stat-lbl-sm">ERA</span> 0.00</td>
+          <td class="td-stat"><span class="stat-lbl-sm">IP</span> 3.0</td>
+          <td class="td-stat"><span class="stat-lbl-sm">WHIP</span> 0.33</td>
         </tr>
 
         <tr data-level="Rookie" data-name="peyton prescott">
@@ -1348,9 +1359,9 @@ footer a { color: var(--gold); text-decoration: none; }
           <td><span class="lvl-badge" style="background:#6B4C93;color:white">Rookie</span></td>
           <td class="td-team">ACL/AZL</td>
           <td class="td-org">Toronto Blue Jays</td>
-          <td class="td-stat"><span class="stat-lbl-sm">AVG</span> —</td>
-          <td class="td-stat"><span class="stat-lbl-sm">HR</span> —</td>
-          <td class="td-stat"><span class="stat-lbl-sm">OPS</span> —</td>
+          <td class="td-stat"><span class="stat-lbl-sm">AVG</span> .333</td>
+          <td class="td-stat"><span class="stat-lbl-sm">HR</span> 0</td>
+          <td class="td-stat"><span class="stat-lbl-sm">OPS</span> .666</td>
         </tr>
 
         <tr data-level="Rookie" data-name="maison martinez">
@@ -1462,7 +1473,43 @@ footer a { color: var(--gold); text-decoration: none; }
             <span><span class="link-lbl">Garnet &amp; Gold</span><span class="link-sub">Official FSU merchandise</span></span>
           </a>
         </li>
+        <li>
+          <a href="https://seminolecoachesclub.com" target="_blank">
+            <span class="link-icon">🏆</span>
+            <span><span class="link-lbl">Seminole Coaches Club</span><span class="link-sub">Support FSU Athletics</span></span>
+          </a>
+        </li>
       </ul>
+    </div>
+
+    <!-- Social Links -->
+    <div class="sidebar-widget">
+      <div class="sidebar-widget-hdr">📲 Follow Noles in the Show</div>
+      <ul class="links-list">
+        <li>
+          <a href="https://twitter.com/NolesInTheShow" target="_blank">
+            <span class="link-icon">𝕏</span>
+            <span><span class="link-lbl">@NolesInTheShow</span><span class="link-sub">Updates, call-ups &amp; news</span></span>
+          </a>
+        </li>
+        <li>
+          <a href="https://instagram.com/NolesInTheShow" target="_blank">
+            <span class="link-icon">📸</span>
+            <span><span class="link-lbl">@NolesInTheShow</span><span class="link-sub">Player graphics &amp; highlights</span></span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Ad Placeholder (Sidebar) -->
+    <div class="sidebar-widget" style="overflow:visible;">
+      <div style="background:#f8f5f0; border:2px dashed #e0d0b8; border-radius:8px; padding:20px 12px; text-align:center; color:#b0a080; font-size:0.72rem; letter-spacing:0.05em; text-transform:uppercase; min-height:250px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;">
+        <div style="font-size:1.5rem;">📢</div>
+        <div style="font-weight:700; color:#c9a96e;">Advertisement</div>
+        <div style="font-size:0.65rem; color:#bbb;">Google AdSense<br>300×250</div>
+        <!-- Replace this block with your AdSense unit code -->
+        <!-- <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXX" data-ad-slot="XXXXXXX" data-ad-format="auto"></ins> -->
+      </div>
     </div>
 
   </div>
@@ -1479,6 +1526,15 @@ footer a { color: var(--gold); text-decoration: none; }
   </div>
 </div>
 
+<!-- Ad Unit: above footer -->
+<div style="max-width:1200px; margin:0 auto 32px; padding:0 32px;">
+  <div style="background:#f8f5f0; border:2px dashed #e0d0b8; border-radius:8px; padding:14px; text-align:center; color:#b0a080; font-size:0.72rem; letter-spacing:0.05em; text-transform:uppercase; min-height:90px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;">
+    <div style="font-weight:700; color:#c9a96e;">Advertisement</div>
+    <div style="font-size:0.65rem; color:#bbb;">Google AdSense · 728×90 Leaderboard</div>
+    <!-- <ins class="adsbygoogle" style="display:inline-block;width:728px;height:90px" data-ad-client="ca-pub-XXXXXXX" data-ad-slot="XXXXXXX"></ins> -->
+  </div>
+</div>
+
 <!-- Twitter widget script -->
 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
@@ -1486,6 +1542,12 @@ footer a { color: var(--gold); text-decoration: none; }
 <footer>
   <p><strong style="color:white">Noles in the Show</strong> · Fan site, not affiliated with FSU or MLB.</p>
   <p style="margin-top:6px;">Data sourced from <a href="https://statsapi.mlb.com">MLB Stats API</a> · 2026 Season</p>
+  <p style="margin-top:10px; display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+    <a href="https://twitter.com/NolesInTheShow" target="_blank">𝕏 @NolesInTheShow</a>
+    <a href="https://instagram.com/NolesInTheShow" target="_blank">📸 Instagram</a>
+    <a href="https://fsuseminoles.com/sports/baseball" target="_blank">⚾ FSU Baseball</a>
+    <a href="https://seminolecoachesclub.com" target="_blank">🏆 Seminole Coaches Club</a>
+  </p>
 </footer>
 
 <script>
@@ -1556,4 +1618,4 @@ function applyFilters() {
 }
 </script>
 </body>
-</html>
+</html>                                                                                                                                                                                                                                                                                                                   
