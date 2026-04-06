@@ -140,12 +140,24 @@ def read_roster() -> list[dict]:
     players = []
     for row in ws.iter_rows(min_row=2, max_row=ws.max_row, values_only=True):
         name, pos, org, level, team = row[0], row[1], row[2], row[3], row[4]
-        milb_url = (row[10] if len(row) > 10 else None) or MILB_URLS.get(name, "")
+        draft_year  = row[5] if len(row) > 5 else None
+        draft_round = row[6] if len(row) > 6 else None
+        draft_pick  = row[7] if len(row) > 7 else None
+        notes       = row[9] if len(row) > 9 else None
+        milb_url    = MILB_URLS.get(name, "")
+        if draft_round and str(draft_round).upper() in ("UDFA", "CB-A"):
+            draft_str = f"{draft_year} · {draft_round}" if draft_year else str(draft_round)
+        elif draft_year and draft_round:
+            pick_str  = f" (Pick #{draft_pick})" if draft_pick and str(draft_pick) != "—" else ""
+            draft_str = f"{draft_year} · Rd {draft_round}{pick_str}"
+        else:
+            draft_str = str(draft_year) if draft_year else ""
         if name:
             players.append({
                 "name": name, "position": pos or "",
                 "org": org or "", "level": level or "",
-                "team": team or "", "milb_url": milb_url
+                "team": team or "", "milb_url": milb_url,
+                "draft_info": draft_str, "notes": notes or ""
             })
     return players
 
@@ -313,42 +325,80 @@ def generate_html(player_data: list[dict]):
         pid = mid if mid else "000000"
         return f"{base}/{fallback}/w_120,q_auto:best/v1/people/{pid}/headshot/67/current"
 
-    # ── Card view ─────────────────────────────────────────────────────────────
-    def player_card(p):
-        stats = p.get("stats_fmt", {})
-        lvl   = p["level"]
-        color = level_colors.get(lvl, "#555")
-        txt   = "#333" if lvl in light_levels else "white"
-        pitcher = is_pitcher(p["position"])
-        stat_keys = ([("ERA","ERA"),("IP","IP"),("W","W"),("L","L"),
-                      ("SV","SV"),("K","K"),("BB","BB"),("WHIP","WHIP")]
-                     if pitcher else
-                     [("AVG","AVG"),("HR","HR"),("RBI","RBI"),("OPS","OPS"),("OBP","OBP"),
-                      ("G","G"),("AB","AB"),("H","H"),("R","R"),("SB","SB")])
-        stats_html = "".join(
-            f'<div class="stat"><div class="stat-val">{stats.get(k,"—")}</div>'
-            f'<div class="stat-lbl">{lbl}</div></div>'
-            for k, lbl in stat_keys
+    # ── Card stat strip ──────────────────────────────────────────────────────
+    def card_stat_strip(stats, pitcher):
+        if not stats:
+            return '<div class="no-stats-strip">No 2026 stats yet</div>'
+        keys = [("ERA","ERA"),("WHIP","WHIP"),("K","K"),("G","G")] if pitcher else \
+               [("AVG","AVG"),("HR","HR"),("OPS","OPS"),("G","G")]
+        return "".join(
+            f'<div class="cs"><div class="cs-val">{stats.get(k,"—")}</div>'
+            f'<div class="cs-lbl">{lbl}</div></div>'
+            for k, lbl in keys
         )
-        no_data_msg = ('<div class="no-data">Season not started or not in MLB system</div>'
-                       if not stats else "")
-        org_line = (f'<div class="card-org">⬆ {p["org"]}</div>'
-                    if lvl != "MLB" and p.get("org") else "")
-        return f'''
-        <div class="card" data-level="{lvl}" data-name="{p["name"].lower()}">
-          <div class="card-header" style="background:{color};color:{txt}">
-            <img class="card-photo" src="{photo_url(p)}" alt="{p["name"]}" onerror="this.style.display='none'">
-            <div class="card-info">
-              <div class="card-name">{f'<a href="{p["milb_url"]}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">{p["name"]}</a>' if p.get("milb_url") else p["name"]}</div>
-              <div class="card-meta">{p["position"]} · {p["team"]}</div>
-              {org_line}
-            </div>
-          </div>
-          <div class="card-level" style="color:{color}">{lvl}</div>
-          <div class="card-stats">{stats_html}{no_data_msg}</div>
-        </div>'''
 
-    cards_html = "\n".join(player_card(p) for p in sorted_players)
+    # ── Modal stats table ─────────────────────────────────────────────────────
+    def modal_stats_html(stats, pitcher):
+        if not stats:
+            return '<div class="no-stats-modal">No stats yet — season in progress</div>'
+        hdrs = ["G","GS","W","L","SV","IP","ERA","WHIP","K","BB"] if pitcher else \
+               ["G","AB","AVG","HR","RBI","R","SB","OBP","SLG","OPS"]
+        th = "".join(f"<th>{h}</th>" for h in hdrs)
+        td = "".join(f"<td>{stats.get(h,'—')}</td>" for h in hdrs)
+        return (f'<table class="stats-tbl"><thead><tr>{th}</tr></thead>'
+                f'<tbody><tr>{td}</tr></tbody></table>')
+
+    # ── Card view ─────────────────────────────────────────────────────────────
+    def player_card(p, idx):
+        stats   = p.get("stats_fmt", {})
+        lvl     = p["level"]
+        color   = level_colors.get(lvl, "#555")
+        txt     = "#333" if lvl in light_levels else "white"
+        pitcher = is_pitcher(p["position"])
+        strip   = card_stat_strip(stats, pitcher)
+        draft   = p.get("draft_info", "")
+        fb = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Ccircle cx='40' cy='40' r='40' fill='%23e8d9b0'/%3E%3Ccircle cx='40' cy='30' r='16' fill='%23CEB888'/%3E%3Cellipse cx='40' cy='72' rx='24' ry='16' fill='%23CEB888'/%3E%3C/svg%3E"
+        return (
+            f'<div class="card" data-level="{lvl}" data-name="{p["name"].lower()}" '
+            f'onclick="openModal({idx})" style="cursor:pointer">'
+            f'<div class="card-top" style="background:{color}"></div>'
+            f'<div class="card-photo-wrap">'
+            f'<img class="card-photo" src="{photo_url(p)}" alt="{p["name"]}" onerror="this.src=\'{fb}\'">'
+            f'</div>'
+            f'<div class="card-body">'
+            f'<div class="card-name">{p["name"]}</div>'
+            f'<div class="card-pos">{p["position"]}</div>'
+            f'<div class="card-team">{p["team"]}</div>'
+            f'<span class="lvl-badge" style="background:{color};color:{txt}">{lvl}</span>'
+            f'<div class="card-draft">{draft}</div>'
+            f'<div class="card-stats-strip">{strip}</div>'
+            f'</div></div>'
+        )
+
+    cards_html = "\n".join(player_card(p, i) for i, p in enumerate(sorted_players))
+
+    # ── Build modal JSON (done outside f-string to avoid brace conflicts) ─────
+    import json as _json
+    modal_players = []
+    for p in sorted_players:
+        stats   = p.get("stats_fmt", {})
+        pitcher = is_pitcher(p["position"])
+        lvl     = p["level"]
+        modal_players.append({
+            "name":      p["name"],
+            "pos":       p["position"],
+            "org":       p["org"],
+            "team":      p["team"],
+            "lvl":       lvl,
+            "color":     level_colors.get(lvl, "#555"),
+            "txt":       "#333" if lvl in light_levels else "white",
+            "draft":     p.get("draft_info", ""),
+            "notes":     p.get("notes", ""),
+            "milb_url":  p.get("milb_url", ""),
+            "photo":     photo_url(p),
+            "statsHtml": modal_stats_html(stats, pitcher),
+        })
+    modal_json_str = _json.dumps(modal_players, ensure_ascii=False)
 
     # ── List/table view ───────────────────────────────────────────────────────
     def table_row(p):
@@ -530,28 +580,71 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
 .links-list .link-sub {{ font-size: 0.72rem; color: #aaa; display: block; margin-top: 1px; }}
 
 /* ── Card grid ── */
-.grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }}
+.grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }}
 .card {{ background: white; border-radius: 10px; overflow: hidden;
-         box-shadow: var(--shadow); transition: transform .15s, box-shadow .15s; }}
-.card:hover {{ transform: translateY(-2px); box-shadow: 0 6px 20px rgba(120,47,64,0.15); }}
+         box-shadow: var(--shadow); transition: transform .15s, box-shadow .15s;
+         cursor: pointer; }}
+.card:hover {{ transform: translateY(-3px); box-shadow: 0 8px 24px rgba(120,47,64,0.18); }}
 .card.hidden {{ display: none; }}
-.card-header {{ padding: 14px 16px; color: white; display: flex; align-items: center; gap: 12px; }}
-.card-photo {{ width: 54px; height: 54px; border-radius: 50%; object-fit: cover;
-               border: 2px solid rgba(255,255,255,0.4); flex-shrink: 0; background: rgba(255,255,255,0.15); }}
-.card-info {{ flex: 1; min-width: 0; }}
-.card-name {{ font-size: 1rem; font-weight: 700; }}
-.card-meta {{ font-size: 0.75rem; opacity: 0.85; margin-top: 2px; }}
-.card-org  {{ font-size: 0.65rem; opacity: 0.75; margin-top: 3px; font-style: italic; }}
-.card-level {{ font-size: 0.68rem; font-weight: 700; letter-spacing: .5px;
-               text-transform: uppercase; padding: 6px 16px 0; }}
-.card-stats {{ display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px 12px 14px; gap: 6px; }}
-.stat {{ text-align: center; }}
-.stat-val {{ font-size: 1rem; font-weight: 700; color: var(--garnet); }}
-.stat-lbl {{ font-size: 0.62rem; color: #999; text-transform: uppercase; margin-top: 1px; }}
-.no-data {{ grid-column: 1/-1; text-align: center; color: #bbb;
-            font-size: 0.78rem; padding: 8px 0; font-style: italic; }}
-.season-note {{ text-align: center; font-size: 0.68rem; color: #aaa;
-                font-style: italic; padding: 2px 0 6px; }}
+/* portrait card */
+.card-top {{ height: 6px; }}
+.card-photo-wrap {{ display:flex; justify-content:center; padding: 18px 0 10px; background:#fafafa; }}
+.card-photo {{ width: 72px; height: 72px; border-radius: 50%; object-fit: cover;
+               border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,.15);
+               background: #ddd; }}
+.card-body {{ padding: 0 14px 14px; text-align: center; }}
+.card-name {{ font-size: 0.95rem; font-weight: 700; color: #1a1a1a; margin: 6px 0 2px; }}
+.card-pos  {{ font-size: 0.7rem; color: #888; margin-bottom: 4px; }}
+.card-badge {{ display: inline-block; padding: 2px 9px; border-radius: 10px;
+               font-size: 0.65rem; font-weight: 700; letter-spacing: .4px;
+               text-transform: uppercase; margin-bottom: 6px; }}
+.card-team {{ font-size: 0.72rem; color: #666; margin-bottom: 8px;
+              white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+/* stat strip on card */
+.cs-strip {{ display: grid; grid-template-columns: repeat(4, 1fr);
+             border-top: 1px solid #eee; padding-top: 8px; gap: 4px; }}
+.cs {{ text-align: center; }}
+.cs-val {{ font-size: 0.92rem; font-weight: 700; color: var(--garnet); }}
+.cs-lbl {{ font-size: 0.58rem; color: #aaa; text-transform: uppercase; margin-top: 1px; }}
+.no-stats-strip {{ text-align: center; color: #ccc; font-size: 0.72rem;
+                   font-style: italic; padding: 6px 0 2px; }}
+/* ── Modal ── */
+.modal-overlay {{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.55);
+                  z-index:1000; justify-content:center; align-items:flex-start;
+                  overflow-y:auto; padding: 40px 16px; }}
+.modal-overlay.open {{ display:flex; }}
+.modal-box {{ background:white; border-radius:14px; width:100%; max-width:520px;
+              box-shadow:0 20px 60px rgba(0,0,0,.3); overflow:hidden;
+              animation: modalIn .2s ease; }}
+@keyframes modalIn {{ from {{opacity:0;transform:translateY(-20px)}} to {{opacity:1;transform:translateY(0)}} }}
+.modal-header {{ background: var(--garnet); color:white;
+                 padding: 20px 20px 16px; position:relative; }}
+.modal-header h2 {{ margin:0; font-size:1.2rem; font-weight:700; }}
+.modal-header .mh-sub {{ font-size:0.78rem; opacity:.8; margin-top:4px; }}
+.modal-close {{ position:absolute; top:14px; right:16px; background:rgba(255,255,255,.2);
+                border:none; color:white; font-size:1.2rem; cursor:pointer;
+                border-radius:50%; width:32px; height:32px; display:flex;
+                align-items:center; justify-content:center; line-height:1; }}
+.modal-close:hover {{ background:rgba(255,255,255,.35); }}
+.modal-body {{ padding: 20px; }}
+.modal-photo {{ width:80px; height:80px; border-radius:50%; object-fit:cover;
+                border:3px solid var(--border); float:right; margin: 0 0 12px 16px; }}
+.modal-meta {{ font-size:0.82rem; color:#555; line-height:1.7; }}
+.modal-meta strong {{ color:#222; }}
+.modal-stats-table {{ width:100%; border-collapse:collapse; margin-top:14px;
+                      font-size:0.83rem; clear:both; }}
+.modal-stats-table th {{ background:var(--garnet); color:white; padding:6px 10px;
+                          font-size:0.72rem; font-weight:600; text-transform:uppercase;
+                          letter-spacing:.04em; text-align:center; }}
+.modal-stats-table td {{ padding:7px 10px; border-bottom:1px solid #eee;
+                          text-align:center; color:#333; font-weight:600; }}
+.modal-stats-table tr:last-child td {{ border-bottom:none; }}
+.modal-stats-table .lbl-col {{ text-align:left; color:#888; font-weight:400; }}
+.modal-draft {{ margin-top:12px; font-size:0.78rem; color:#777; }}
+.modal-notes {{ margin-top:8px; font-size:0.8rem; color:#555;
+                background:#fafafa; border-radius:6px; padding:8px 12px;
+                border-left:3px solid var(--garnet); }}
+.no-stats-modal {{ color:#bbb; font-style:italic; font-size:0.82rem; text-align:center; padding:16px 0; }}
 
 /* ── List/Table view ── */
 .list-wrap {{ display: none; }}
@@ -615,12 +708,11 @@ footer a {{ color: var(--gold); text-decoration: none; }}
   .view-toggle {{ margin-left: 0; }}
   .roster-layout {{ padding: 12px 16px; }}
   .grid {{ grid-template-columns: 1fr 1fr; gap: 10px; }}
-  .card-stats {{ grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 8px 8px 10px; }}
-  .stat-val {{ font-size: 0.85rem; }}
-  .stat-lbl {{ font-size: 0.55rem; }}
-  .card-photo {{ width: 42px; height: 42px; }}
-  .card-name {{ font-size: 0.88rem; }}
-  .card-meta {{ font-size: 0.68rem; }}
+  .card-photo {{ width: 60px; height: 60px; }}
+  .card-name {{ font-size: 0.85rem; }}
+  .cs-val {{ font-size: 0.82rem; }}
+  .cs-lbl {{ font-size: 0.52rem; }}
+  .modal-box {{ max-width: 100%; margin: 0; border-radius: 10px; }}
   .roster-sidebar {{ flex-direction: column; }}
   .sidebar-widget {{ min-width: unset; }}
   .section-wrap {{ padding: 0 16px; }}
@@ -826,6 +918,24 @@ footer a {{ color: var(--gold); text-decoration: none; }}
   </div>
 </div>
 
+<!-- Modal overlay -->
+<div class="modal-overlay" id="modalOverlay" onclick="maybeClose(event)">
+  <div class="modal-box" id="modalBox">
+    <div class="modal-header">
+      <h2 id="mName">Player</h2>
+      <div class="mh-sub" id="mSub"></div>
+      <button class="modal-close" onclick="closeModal()">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <img class="modal-photo" id="mPhoto" src="" alt="">
+      <div class="modal-meta" id="mMeta"></div>
+      <div id="mStatsSection"></div>
+      <div class="modal-draft" id="mDraft"></div>
+      <div class="modal-notes" id="mNotes" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
 <!-- Twitter widget script -->
 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
@@ -836,9 +946,46 @@ footer a {{ color: var(--gold); text-decoration: none; }}
 </footer>
 
 <script>
+MODAL_DATA_PLACEHOLDER
+
 let currentLevel = 'all';
 let currentSearch = '';
 let currentView = 'cards';
+
+function openModal(idx) {{
+  const p = MODAL_DATA[idx];
+  if (!p) return;
+  document.getElementById('mName').textContent  = p.name;
+  document.getElementById('mSub').textContent   = p.posTeam;
+  document.getElementById('mPhoto').src         = p.photo;
+  document.getElementById('mPhoto').alt         = p.name;
+  document.getElementById('mMeta').innerHTML    = p.metaHtml;
+  document.getElementById('mStatsSection').innerHTML = p.statsHtml;
+  const draftEl = document.getElementById('mDraft');
+  draftEl.textContent = p.draft ? '🎓 Draft: ' + p.draft : '';
+  const notesEl = document.getElementById('mNotes');
+  if (p.notes) {{
+    notesEl.textContent = p.notes;
+    notesEl.style.display = 'block';
+  }} else {{
+    notesEl.style.display = 'none';
+  }}
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}}
+
+function closeModal() {{
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}}
+
+function maybeClose(e) {{
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}}
+
+document.addEventListener('keydown', function(e) {{
+  if (e.key === 'Escape') closeModal();
+}});
 
 function setView(v) {{
   currentView = v;
@@ -850,14 +997,12 @@ function setView(v) {{
 
 function filterLevel(level, btn) {{
   currentLevel = level;
-  // Reset all buttons
   document.querySelectorAll('.filter-btn').forEach(b => {{
     b.classList.remove('active');
     b.style.background = '';
     b.style.borderColor = '';
     b.style.color = '';
   }});
-  // Style active button with its level color
   btn.classList.add('active');
   const c = btn.dataset.color || '#782F40';
   btn.style.background  = c;
@@ -872,7 +1017,6 @@ function applySearch(q) {{
   applyFilters();
 }}
 
-// ── Active nav highlighting on scroll ─────────────────────────────────────
 const navSections = ['home','roster','news','about'];
 function updateActiveNav() {{
   const scrollY = window.scrollY + 80;
@@ -888,13 +1032,11 @@ function updateActiveNav() {{
 window.addEventListener('scroll', updateActiveNav, {{ passive: true }});
 
 function applyFilters() {{
-  // Cards
   document.querySelectorAll('.card').forEach(card => {{
     const levelMatch = currentLevel === 'all' || card.dataset.level === currentLevel;
     const nameMatch  = !currentSearch || card.dataset.name.includes(currentSearch);
     card.classList.toggle('hidden', !levelMatch || !nameMatch);
   }});
-  // Rows
   document.querySelectorAll('#listBody tr').forEach(row => {{
     const levelMatch = currentLevel === 'all' || row.dataset.level === currentLevel;
     const nameMatch  = !currentSearch || row.dataset.name.includes(currentSearch);
@@ -904,6 +1046,10 @@ function applyFilters() {{
 </script>
 </body>
 </html>"""
+
+    # Inject modal data (done outside f-string to avoid brace conflicts)
+    html = html.replace("MODAL_DATA_PLACEHOLDER",
+                        f"const MODAL_DATA = {modal_json_str};")
 
     with open(HTML_PATH, "w", encoding="utf-8") as f:
         f.write(html)
