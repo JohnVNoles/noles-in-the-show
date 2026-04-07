@@ -38,6 +38,13 @@ LEVEL_SPORT_ID = {
 
 HEADERS = {"User-Agent": "NolesInTheShow/1.0"}
 
+# ── Manual level/team overrides (persists across Action runs) ─────────────────
+# Add players here when their Excel entry lags behind reality.
+# Format: "Player Name": {"level": "MLB", "team": "Team Name", "org": "Org Name"}
+LEVEL_OVERRIDES = {
+    "Shane Drohan": {"level": "MLB", "team": "Milwaukee Brewers", "org": "Milwaukee Brewers"},
+}
+
 # ── MiLB Profile URLs (used for direct player ID extraction and clickable links) ──
 MILB_URLS = {
     "Shane Drohan":       "https://www.milb.com/player/shane-drohan-675660",
@@ -153,10 +160,13 @@ def read_roster() -> list[dict]:
         else:
             draft_str = str(draft_year) if draft_year else ""
         if name:
+            override = LEVEL_OVERRIDES.get(name, {})
             players.append({
                 "name": name, "position": pos or "",
-                "org": org or "", "level": level or "",
-                "team": team or "", "milb_url": milb_url,
+                "org":   override.get("org",   org   or ""),
+                "level": override.get("level", level or ""),
+                "team":  override.get("team",  team  or ""),
+                "milb_url": milb_url,
                 "draft_info": draft_str, "notes": notes or ""
             })
     return players
