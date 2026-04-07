@@ -496,9 +496,8 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
        justify-content: space-between; position: sticky; top: 0; z-index: 100;
        box-shadow: 0 2px 8px rgba(0,0,0,0.25); }}
 .nav-brand {{ display: flex; align-items: center; gap: 10px; padding: 14px 0; text-decoration: none; }}
-.nav-logo {{ width: 36px; height: 36px; background: var(--gold); border-radius: 50%;
-              display: flex; align-items: center; justify-content: center;
-              font-weight: 900; font-size: 16px; color: var(--garnet); flex-shrink: 0; }}
+.nav-logo {{ width: 48px; height: 48px; border-radius: 6px; flex-shrink: 0;
+              object-fit: cover; display: block; }}
 .nav-title {{ color: white; font-weight: 700; font-size: 1.1rem; }}
 .nav-sub   {{ color: var(--gold); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; }}
 .nav-links {{ display: flex; gap: 2px; margin: 0 24px; }}
@@ -770,7 +769,7 @@ footer a {{ color: var(--gold); text-decoration: none; }}
 <!-- Nav -->
 <nav>
   <a href="#home" class="nav-brand">
-    <div class="nav-logo">N</div>
+    <img class="nav-logo" src="logo.png" alt="Noles in the Show">
     <div>
       <div class="nav-title">Noles in the Show</div>
       <div class="nav-sub">FSU Baseball Alumni Tracker</div>
