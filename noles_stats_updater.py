@@ -365,7 +365,13 @@ def generate_html(player_data: list[dict]):
         pitcher = is_pitcher(p["position"])
         strip   = card_stat_strip(stats, pitcher)
         draft   = p.get("draft_info", "")
-        fb = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Ccircle cx='40' cy='40' r='40' fill='%23e8d9b0'/%3E%3Ccircle cx='40' cy='30' r='16' fill='%23CEB888'/%3E%3Cellipse cx='40' cy='72' rx='24' ry='16' fill='%23CEB888'/%3E%3C/svg%3E"
+        initials = "".join(w[0].upper() for w in p["name"].split()[:2])
+        import urllib.parse
+        fb_svg = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">'
+                  f'<circle cx="40" cy="40" r="40" fill="#782F40"/>'
+                  f'<text x="40" y="52" font-family="Segoe UI,sans-serif" font-size="26" '
+                  f'font-weight="700" fill="#CEB888" text-anchor="middle">{initials}</text></svg>')
+        fb = "data:image/svg+xml," + urllib.parse.quote(fb_svg)
         return (
             f'<div class="card" data-level="{lvl}" data-name="{p["name"].lower()}" '
             f'onclick="openModal({idx})" style="cursor:pointer">'
@@ -414,6 +420,7 @@ def generate_html(player_data: list[dict]):
             "notes":     p.get("notes", "") or "",
             "milb_url":  p.get("milb_url", ""),
             "photo":     photo_url(p),
+            "initials":  "".join(w[0].upper() for w in p["name"].split()[:2]),
             "metaHtml":  meta_html,
             "statsHtml": modal_stats_html(stats, pitcher),
         })
@@ -946,7 +953,7 @@ footer a {{ color: var(--gold); text-decoration: none; }}
     </div>
     <div class="modal-body">
       <img class="modal-photo" id="mPhoto" src="" alt=""
-        onerror="var pid=this.src.match(/people\/(\d+)/)?.[1]; if(pid && !this.dataset.tried){{this.dataset.tried=1; var alt=this.src.includes('/67/') ? this.src.replace('/67/','/milb/') : this.src.replace('/milb/','/67/'); this.src=alt;}}">
+        onerror="var pid=this.src.match(/people\/(\d+)/)?.[1]; if(pid && !this.dataset.tried){{this.dataset.tried=1; var alt=this.src.includes('/67/') ? this.src.replace('/67/','/milb/') : this.src.replace('/milb/','/67/'); this.src=alt;}} else {{ var ini=this.dataset.initials||'?'; var svg='<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 80 80\\'><circle cx=\\'40\\' cy=\\'40\\' r=\\'40\\' fill=\\'%23782F40\\'/><text x=\\'40\\' y=\\'52\\' font-family=\\'Segoe UI,sans-serif\\' font-size=\\'26\\' font-weight=\\'700\\' fill=\\'%23CEB888\\' text-anchor=\\'middle\\'>'+ini+'</text></svg>'; this.src='data:image/svg+xml,'+svg; }}">
       <div class="modal-meta" id="mMeta"></div>
       <div id="mStatsSection"></div>
       <div class="modal-draft" id="mDraft"></div>
@@ -976,8 +983,11 @@ function openModal(idx) {{
   if (!p) return;
   document.getElementById('mName').textContent  = p.name;
   document.getElementById('mSub').textContent   = p.posTeam;
-  document.getElementById('mPhoto').src         = p.photo;
-  document.getElementById('mPhoto').alt         = p.name;
+  const mPhoto = document.getElementById('mPhoto');
+  mPhoto.dataset.tried = '';
+  mPhoto.dataset.initials = p.initials || '';
+  mPhoto.src = p.photo;
+  mPhoto.alt = p.name;
   document.getElementById('mMeta').innerHTML    = p.metaHtml;
   document.getElementById('mStatsSection').innerHTML = p.statsHtml;
   const draftEl = document.getElementById('mDraft');
