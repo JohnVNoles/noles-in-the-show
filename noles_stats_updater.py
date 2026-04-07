@@ -366,22 +366,19 @@ def generate_html(player_data: list[dict]):
         strip   = card_stat_strip(stats, pitcher)
         draft   = p.get("draft_info", "")
         initials = "".join(w[0].upper() for w in p["name"].split()[:2])
-        import urllib.parse
-        fb_svg = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">'
-                  f'<circle cx="40" cy="40" r="40" fill="#782F40"/>'
-                  f'<text x="40" y="52" font-family="Segoe UI,sans-serif" font-size="26" '
-                  f'font-weight="700" fill="#CEB888" text-anchor="middle">{initials}</text></svg>')
-        fb = "data:image/svg+xml," + urllib.parse.quote(fb_svg)
         return (
             f'<div class="card" data-level="{lvl}" data-name="{p["name"].lower()}" '
             f'onclick="openModal({idx})" style="cursor:pointer">'
             f'<div class="card-top" style="background:{color}"></div>'
             f'<div class="card-main">'
+            f'<div class="card-photo-wrap">'
+            f'<div class="card-photo-init">{initials}</div>'
             f'<img class="card-photo" src="{photo_url(p)}" alt="{p["name"]}" '
-            f'onerror="var pid=this.src.match(/people\\/(\d+)/)?.[1]; '
-            f'if(pid && !this.dataset.tried){{this.dataset.tried=1; '
-            f'var alt=this.src.includes(\'/67/\') ? this.src.replace(\'/67/\',\'/milb/\') : this.src.replace(\'/milb/\',\'/67/\'); '
-            f'this.src=alt;}} else {{this.src=\'{fb}\';}}">'
+            f'onload="if(this.naturalWidth<10)this.style.display=\'none\'" '
+            f'onerror="var t=this,s=t.src;if(!t.dataset.tried){{t.dataset.tried=1;'
+            f't.src=s.includes(\'/67/\')?s.replace(\'/67/\',\'/milb/\'):s.replace(\'/milb/\',\'/67/\');}}'
+            f'else{{t.style.display=\'none\';}}">'
+            f'</div>'
             f'<div class="card-info">'
             f'<div class="card-name">{p["name"]}</div>'
             f'<div class="card-pos-team">{p["position"]} · {p["team"]}</div>'
@@ -615,8 +612,12 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
 /* horizontal card */
 .card-top {{ height: 5px; }}
 .card-main {{ display: flex; align-items: center; gap: 12px; padding: 10px 14px 8px; }}
-.card-photo {{ width: 54px; height: 54px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
-               border: 2px solid #eee; background: #f0e8d8; }}
+.card-photo-wrap {{ position:relative; width:54px; height:54px; flex-shrink:0; border-radius:50%; }}
+.card-photo-init {{ position:absolute; inset:0; border-radius:50%; background:#782F40;
+                    color:#CEB888; font-size:1.1rem; font-weight:700;
+                    display:flex; align-items:center; justify-content:center; }}
+.card-photo {{ position:absolute; inset:0; width:54px; height:54px; border-radius:50%;
+               object-fit:cover; border:2px solid #eee; background:transparent; }}
 .card-info {{ flex: 1; min-width: 0; }}
 .card-name {{ font-size: 0.92rem; font-weight: 700; color: #1a1a1a; white-space: nowrap;
               overflow: hidden; text-overflow: ellipsis; }}
@@ -652,8 +653,12 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
                 align-items:center; justify-content:center; line-height:1; }}
 .modal-close:hover {{ background:rgba(255,255,255,.35); }}
 .modal-body {{ padding: 20px; }}
-.modal-photo {{ width:80px; height:80px; border-radius:50%; object-fit:cover;
-                border:3px solid var(--border); float:right; margin: 0 0 12px 16px; }}
+.modal-photo-wrap {{ position:relative; width:80px; height:80px; float:right; margin:0 0 12px 16px;
+                     border-radius:50%; border:3px solid var(--border); flex-shrink:0; }}
+.modal-photo-init {{ position:absolute; inset:0; border-radius:50%; background:#782F40;
+                     color:#CEB888; font-size:1.6rem; font-weight:700;
+                     display:flex; align-items:center; justify-content:center; }}
+.modal-photo {{ position:absolute; inset:0; width:100%; height:100%; border-radius:50%; object-fit:cover; }}
 .modal-meta {{ font-size:0.82rem; color:#555; line-height:1.7; }}
 .modal-meta strong {{ color:#222; }}
 .modal-stats-table {{ width:100%; border-collapse:collapse; margin-top:14px;
@@ -952,8 +957,12 @@ footer a {{ color: var(--gold); text-decoration: none; }}
       <button class="modal-close" onclick="closeModal()">&#x2715;</button>
     </div>
     <div class="modal-body">
-      <img class="modal-photo" id="mPhoto" src="" alt=""
-        onerror="var pid=this.src.match(/people\/(\d+)/)?.[1]; if(pid && !this.dataset.tried){{this.dataset.tried=1; var alt=this.src.includes('/67/') ? this.src.replace('/67/','/milb/') : this.src.replace('/milb/','/67/'); this.src=alt;}} else {{ var ini=this.dataset.initials||'?'; var svg='<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 80 80\\'><circle cx=\\'40\\' cy=\\'40\\' r=\\'40\\' fill=\\'%23782F40\\'/><text x=\\'40\\' y=\\'52\\' font-family=\\'Segoe UI,sans-serif\\' font-size=\\'26\\' font-weight=\\'700\\' fill=\\'%23CEB888\\' text-anchor=\\'middle\\'>'+ini+'</text></svg>'; this.src='data:image/svg+xml,'+svg; }}">
+      <div class="modal-photo-wrap">
+        <div class="modal-photo-init" id="mPhotoInit"></div>
+        <img class="modal-photo" id="mPhoto" src="" alt=""
+          onload="if(this.naturalWidth<10)this.style.display='none'"
+          onerror="var t=this,s=t.src;if(!t.dataset.tried){{t.dataset.tried=1;t.src=s.includes('/67/')?s.replace('/67/','/milb/'):s.replace('/milb/','/67/');}}else{{t.style.display='none';}}">
+      </div>
       <div class="modal-meta" id="mMeta"></div>
       <div id="mStatsSection"></div>
       <div class="modal-draft" id="mDraft"></div>
@@ -984,8 +993,10 @@ function openModal(idx) {{
   document.getElementById('mName').textContent  = p.name;
   document.getElementById('mSub').textContent   = p.posTeam;
   const mPhoto = document.getElementById('mPhoto');
+  const mPhotoInit = document.getElementById('mPhotoInit');
+  mPhotoInit.textContent = p.initials || '?';
   mPhoto.dataset.tried = '';
-  mPhoto.dataset.initials = p.initials || '';
+  mPhoto.style.display = '';
   mPhoto.src = p.photo;
   mPhoto.alt = p.name;
   document.getElementById('mMeta').innerHTML    = p.metaHtml;
