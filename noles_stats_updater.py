@@ -345,7 +345,7 @@ def generate_html(player_data: list[dict]):
                ["G","AB","AVG","HR","RBI","R","SB","OBP","SLG","OPS"]
         th = "".join(f"<th>{h}</th>" for h in hdrs)
         td = "".join(f"<td>{stats.get(h,'—')}</td>" for h in hdrs)
-        return (f'<table class="stats-tbl"><thead><tr>{th}</tr></thead>'
+        return (f'<table class="modal-stats-table"><thead><tr>{th}</tr></thead>'
                 f'<tbody><tr>{td}</tr></tbody></table>')
 
     # ── Card view ─────────────────────────────────────────────────────────────
@@ -384,8 +384,14 @@ def generate_html(player_data: list[dict]):
         stats   = p.get("stats_fmt", {})
         pitcher = is_pitcher(p["position"])
         lvl     = p["level"]
+        team_line = p["team"] if p["team"] == p["org"] else f'{p["team"]} ({p["org"]})'
+        meta_html = (
+            f'<strong>{p["position"]}</strong> · {team_line}<br>'
+            f'<span style="color:#888">{lvl}</span>'
+        )
         modal_players.append({
             "name":      p["name"],
+            "posTeam":   f'{p["position"]} · {team_line}',
             "pos":       p["position"],
             "org":       p["org"],
             "team":      p["team"],
@@ -393,9 +399,10 @@ def generate_html(player_data: list[dict]):
             "color":     level_colors.get(lvl, "#555"),
             "txt":       "#333" if lvl in light_levels else "white",
             "draft":     p.get("draft_info", ""),
-            "notes":     p.get("notes", ""),
+            "notes":     p.get("notes", "") or "",
             "milb_url":  p.get("milb_url", ""),
             "photo":     photo_url(p),
+            "metaHtml":  meta_html,
             "statsHtml": modal_stats_html(stats, pitcher),
         })
     modal_json_str = _json.dumps(modal_players, ensure_ascii=False)
