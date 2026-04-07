@@ -334,9 +334,9 @@ def generate_html(player_data: list[dict]):
             extra = ' cs-p'
             cols = 8
         else:
-            keys = [("AVG","AVG"),("HR","HR"),("OPS","OPS"),("G","G")]
-            extra = ''
-            cols = 4
+            keys = [("G","G"),("AB","AB"),("AVG","AVG"),("H","H"),("HR","HR"),("RBI","RBI")]
+            extra = ' cs-p'
+            cols = 6
         cells = "".join(
             f'<div class="cs{extra}"><div class="cs-val">{stats.get(k,"—")}</div>'
             f'<div class="cs-lbl">{lbl}</div></div>'
