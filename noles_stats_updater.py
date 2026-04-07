@@ -329,13 +329,20 @@ def generate_html(player_data: list[dict]):
     def card_stat_strip(stats, pitcher):
         if not stats:
             return '<div class="no-stats-strip">No 2026 stats yet</div>'
-        keys = [("ERA","ERA"),("WHIP","WHIP"),("K","K"),("G","G")] if pitcher else \
-               [("AVG","AVG"),("HR","HR"),("OPS","OPS"),("G","G")]
-        return "".join(
-            f'<div class="cs"><div class="cs-val">{stats.get(k,"—")}</div>'
+        if pitcher:
+            keys = [("W","W"),("L","L"),("SV","SV"),("IP","IP"),("ERA","ERA"),("WHIP","WHIP"),("K","K"),("G","G")]
+            extra = ' cs-p'
+            cols = 8
+        else:
+            keys = [("AVG","AVG"),("HR","HR"),("OPS","OPS"),("G","G")]
+            extra = ''
+            cols = 4
+        cells = "".join(
+            f'<div class="cs{extra}"><div class="cs-val">{stats.get(k,"—")}</div>'
             f'<div class="cs-lbl">{lbl}</div></div>'
             for k, lbl in keys
         )
+        return f'<div class="card-stats-strip" style="grid-template-columns:repeat({cols},1fr)">{cells}</div>'
 
     # ── Modal stats table ─────────────────────────────────────────────────────
     def modal_stats_html(stats, pitcher):
@@ -371,7 +378,7 @@ def generate_html(player_data: list[dict]):
             f'<div class="card-draft">{draft}</div>'
             f'</div>'
             f'</div>'
-            f'<div class="card-stats-strip">{strip}</div>'
+            f'{strip}'
             f'</div>'
         )
 
@@ -610,6 +617,8 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
 .cs {{ text-align: center; }}
 .cs-val {{ font-size: 0.88rem; font-weight: 700; color: var(--garnet); }}
 .cs-lbl {{ font-size: 0.56rem; color: #bbb; text-transform: uppercase; margin-top: 1px; }}
+.cs-p .cs-val {{ font-size: 0.72rem; }}
+.cs-p .cs-lbl {{ font-size: 0.5rem; }}
 .no-stats-strip {{ grid-column: 1/-1; text-align: center; color: #ccc; font-size: 0.68rem;
                    font-style: italic; padding: 4px 0; }}
 /* ── Modal ── */
