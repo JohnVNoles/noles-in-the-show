@@ -321,9 +321,10 @@ def generate_html(player_data: list[dict]):
     def photo_url(p):
         mid = p.get("mlb_id")
         base = "https://img.mlbstatic.com/mlb-photos/image/upload"
-        fallback = "d_people:generic:headshot:67:current.png"
         pid = mid if mid else "000000"
-        return f"{base}/{fallback}/w_120,q_auto:best/v1/people/{pid}/headshot/67/current"
+        # MLB players use the "67" style; MiLB players use "milb" style
+        style = "67" if p.get("level") == "MLB" else "milb"
+        return f"{base}/w_120,q_auto:best/v1/people/{pid}/headshot/{style}/current"
 
     # ── Card stat strip ──────────────────────────────────────────────────────
     def card_stat_strip(stats, pitcher):
@@ -370,7 +371,11 @@ def generate_html(player_data: list[dict]):
             f'onclick="openModal({idx})" style="cursor:pointer">'
             f'<div class="card-top" style="background:{color}"></div>'
             f'<div class="card-main">'
-            f'<img class="card-photo" src="{photo_url(p)}" alt="{p["name"]}" onerror="this.src=\'{fb}\'">'
+            f'<img class="card-photo" src="{photo_url(p)}" alt="{p["name"]}" '
+            f'onerror="var pid=this.src.match(/people\\/(\d+)/)?.[1]; '
+            f'if(pid && !this.dataset.tried){{this.dataset.tried=1; '
+            f'var alt=this.src.includes(\'/67/\') ? this.src.replace(\'/67/\',\'/milb/\') : this.src.replace(\'/milb/\',\'/67/\'); '
+            f'this.src=alt;}} else {{this.src=\'{fb}\';}}">'
             f'<div class="card-info">'
             f'<div class="card-name">{p["name"]}</div>'
             f'<div class="card-pos-team">{p["position"]} · {p["team"]}</div>'
@@ -940,7 +945,8 @@ footer a {{ color: var(--gold); text-decoration: none; }}
       <button class="modal-close" onclick="closeModal()">&#x2715;</button>
     </div>
     <div class="modal-body">
-      <img class="modal-photo" id="mPhoto" src="" alt="">
+      <img class="modal-photo" id="mPhoto" src="" alt=""
+        onerror="var pid=this.src.match(/people\/(\d+)/)?.[1]; if(pid && !this.dataset.tried){{this.dataset.tried=1; var alt=this.src.includes('/67/') ? this.src.replace('/67/','/milb/') : this.src.replace('/milb/','/67/'); this.src=alt;}}">
       <div class="modal-meta" id="mMeta"></div>
       <div id="mStatsSection"></div>
       <div class="modal-draft" id="mDraft"></div>
