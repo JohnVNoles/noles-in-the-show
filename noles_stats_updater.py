@@ -362,17 +362,17 @@ def generate_html(player_data: list[dict]):
             f'<div class="card" data-level="{lvl}" data-name="{p["name"].lower()}" '
             f'onclick="openModal({idx})" style="cursor:pointer">'
             f'<div class="card-top" style="background:{color}"></div>'
-            f'<div class="card-photo-wrap">'
+            f'<div class="card-main">'
             f'<img class="card-photo" src="{photo_url(p)}" alt="{p["name"]}" onerror="this.src=\'{fb}\'">'
-            f'</div>'
-            f'<div class="card-body">'
+            f'<div class="card-info">'
             f'<div class="card-name">{p["name"]}</div>'
-            f'<div class="card-pos">{p["position"]}</div>'
-            f'<div class="card-team">{p["team"]}</div>'
+            f'<div class="card-pos-team">{p["position"]} · {p["team"]}</div>'
             f'<span class="lvl-badge" style="background:{color};color:{txt}">{lvl}</span>'
             f'<div class="card-draft">{draft}</div>'
+            f'</div>'
+            f'</div>'
             f'<div class="card-stats-strip">{strip}</div>'
-            f'</div></div>'
+            f'</div>'
         )
 
     cards_html = "\n".join(player_card(p, i) for i, p in enumerate(sorted_players))
@@ -587,34 +587,31 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
 .links-list .link-sub {{ font-size: 0.72rem; color: #aaa; display: block; margin-top: 1px; }}
 
 /* ── Card grid ── */
-.grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }}
+.grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }}
 .card {{ background: white; border-radius: 10px; overflow: hidden;
          box-shadow: var(--shadow); transition: transform .15s, box-shadow .15s;
          cursor: pointer; }}
-.card:hover {{ transform: translateY(-3px); box-shadow: 0 8px 24px rgba(120,47,64,0.18); }}
+.card:hover {{ transform: translateY(-2px); box-shadow: 0 6px 20px rgba(120,47,64,0.18); }}
 .card.hidden {{ display: none; }}
-/* portrait card */
-.card-top {{ height: 6px; }}
-.card-photo-wrap {{ display:flex; justify-content:center; padding: 18px 0 10px; background:#fafafa; }}
-.card-photo {{ width: 72px; height: 72px; border-radius: 50%; object-fit: cover;
-               border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,.15);
-               background: #ddd; }}
-.card-body {{ padding: 0 14px 14px; text-align: center; }}
-.card-name {{ font-size: 0.95rem; font-weight: 700; color: #1a1a1a; margin: 6px 0 2px; }}
-.card-pos  {{ font-size: 0.7rem; color: #888; margin-bottom: 4px; }}
-.card-badge {{ display: inline-block; padding: 2px 9px; border-radius: 10px;
-               font-size: 0.65rem; font-weight: 700; letter-spacing: .4px;
-               text-transform: uppercase; margin-bottom: 6px; }}
-.card-team {{ font-size: 0.72rem; color: #666; margin-bottom: 8px;
-              white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+/* horizontal card */
+.card-top {{ height: 5px; }}
+.card-main {{ display: flex; align-items: center; gap: 12px; padding: 10px 14px 8px; }}
+.card-photo {{ width: 54px; height: 54px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
+               border: 2px solid #eee; background: #f0e8d8; }}
+.card-info {{ flex: 1; min-width: 0; }}
+.card-name {{ font-size: 0.92rem; font-weight: 700; color: #1a1a1a; white-space: nowrap;
+              overflow: hidden; text-overflow: ellipsis; }}
+.card-pos-team {{ font-size: 0.7rem; color: #888; margin: 1px 0 4px;
+                  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+.card-draft {{ font-size: 0.65rem; color: #aaa; margin-top: 3px; }}
 /* stat strip on card */
-.cs-strip {{ display: grid; grid-template-columns: repeat(4, 1fr);
-             border-top: 1px solid #eee; padding-top: 8px; gap: 4px; }}
+.card-stats-strip {{ display: grid; grid-template-columns: repeat(4, 1fr);
+                     border-top: 1px solid #f0f0f0; padding: 6px 14px 8px; gap: 4px; }}
 .cs {{ text-align: center; }}
-.cs-val {{ font-size: 0.92rem; font-weight: 700; color: var(--garnet); }}
-.cs-lbl {{ font-size: 0.58rem; color: #aaa; text-transform: uppercase; margin-top: 1px; }}
-.no-stats-strip {{ text-align: center; color: #ccc; font-size: 0.72rem;
-                   font-style: italic; padding: 6px 0 2px; }}
+.cs-val {{ font-size: 0.88rem; font-weight: 700; color: var(--garnet); }}
+.cs-lbl {{ font-size: 0.56rem; color: #bbb; text-transform: uppercase; margin-top: 1px; }}
+.no-stats-strip {{ grid-column: 1/-1; text-align: center; color: #ccc; font-size: 0.68rem;
+                   font-style: italic; padding: 4px 0; }}
 /* ── Modal ── */
 .modal-overlay {{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.55);
                   z-index:1000; justify-content:center; align-items:flex-start;
@@ -714,11 +711,11 @@ footer a {{ color: var(--gold); text-decoration: none; }}
   .search-box {{ width: 130px; }}
   .view-toggle {{ margin-left: 0; }}
   .roster-layout {{ padding: 12px 16px; }}
-  .grid {{ grid-template-columns: 1fr 1fr; gap: 10px; }}
-  .card-photo {{ width: 60px; height: 60px; }}
+  .grid {{ grid-template-columns: 1fr; gap: 8px; }}
+  .card-photo {{ width: 46px; height: 46px; }}
   .card-name {{ font-size: 0.85rem; }}
-  .cs-val {{ font-size: 0.82rem; }}
-  .cs-lbl {{ font-size: 0.52rem; }}
+  .cs-val {{ font-size: 0.8rem; }}
+  .cs-lbl {{ font-size: 0.5rem; }}
   .modal-box {{ max-width: 100%; margin: 0; border-radius: 10px; }}
   .roster-sidebar {{ flex-direction: column; }}
   .sidebar-widget {{ min-width: unset; }}
