@@ -480,6 +480,8 @@ def generate_html(player_data: list[dict]):
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Noles in the Show — {SEASON} Stats</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4259331118703482"
+     crossorigin="anonymous"></script>
 <style>
 :root {{
   --garnet: #782F40; --garnet-dark: #5a1f2d; --garnet-light: #9e4055;
