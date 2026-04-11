@@ -17,11 +17,12 @@ from datetime import datetime
 from pathlib import Path
 
 # ── Config ────────────────────────────────────────────────────────────────────
-BASE_DIR   = Path(__file__).parent
-EXCEL_PATH = BASE_DIR / "noles_in_the_pros.xlsx"
-CACHE_PATH = BASE_DIR / "player_id_cache.json"
-HTML_PATH  = BASE_DIR / "noles_dashboard.html"
-SEASON     = datetime.now().year
+BASE_DIR        = Path(__file__).parent
+EXCEL_PATH      = BASE_DIR / "noles_in_the_pros.xlsx"
+CACHE_PATH      = BASE_DIR / "player_id_cache.json"
+NEWS_CACHE_PATH = BASE_DIR / "news_cache.json"
+HTML_PATH       = BASE_DIR / "noles_dashboard.html"
+SEASON          = datetime.now().year
 MLB_API    = "https://statsapi.mlb.com/api/v1"
 
 # sport IDs: 1=MLB, 11=AAA, 12=AA, 13=High-A, 14=Low-A, 15=Rookie/Short, 16=Complex
@@ -37,47 +38,6 @@ LEVEL_SPORT_ID = {
 }
 
 HEADERS = {"User-Agent": "NolesInTheShow/1.0"}
-
-# ── Manual level/team overrides (persists across Action runs) ─────────────────
-# Add players here when their Excel entry lags behind reality.
-# Format: "Player Name": {"level": "MLB", "team": "Team Name", "org": "Org Name"}
-LEVEL_OVERRIDES = {
-    "Shane Drohan": {"level": "MLB", "team": "Milwaukee Brewers", "org": "Milwaukee Brewers"},
-}
-
-# ── MiLB Profile URLs (used for direct player ID extraction and clickable links) ──
-MILB_URLS = {
-    "Shane Drohan":       "https://www.milb.com/player/shane-drohan-675660",
-    "James Tibbs III":    "https://www.milb.com/player/james-tibbs-iii-696486",
-    "CJ Van Eyk":         "https://www.milb.com/player/cj-van-eyk-669310",
-    "Brandon Leibrandt":  "https://www.milb.com/player/brandon-leibrandt-605335",
-    "Drew Parrish":       "https://www.milb.com/player/drew-parrish-669283",
-    "DJ Stewart":         "https://www.milb.com/player/dj-stewart-621466",
-    "Jamie Arnold":       "https://www.milb.com/player/jamie-arnold-701364",
-    "Jackson Baumeister": "https://www.milb.com/player/jackson-baumeister-691765",
-    "Jack Anderson":      "https://www.milb.com/player/jack-anderson-681252",
-    "J.C. Flowers":       "https://www.milb.com/player/j-c-flowers-669001",
-    "Alex Lodise":        "https://www.milb.com/player/alex-lodise-822676",
-    "Marco Dinges":       "https://www.milb.com/player/marco-dinges-701392",
-    "Jaime Ferrer":       "https://www.milb.com/player/jaime-ferrer-695634",
-    "Carson Dorsey":      "https://www.milb.com/player/carson-dorsey-805955",
-    "Wyatt Crowell":      "https://www.milb.com/player/wyatt-crowell-694573",
-    "Gavin Adams":        "https://www.milb.com/player/gavin-adams-701400",
-    "Yoel Tejeda Jr.":    "https://www.milb.com/player/yoel-tejeda-jr-701347",
-    "Conner Whittaker":   "https://www.milb.com/player/conner-whittaker-701422",
-    "Bryce Hubbart":      "https://www.milb.com/player/bryce-hubbart-687114",
-    "Carson Montgomery":  "https://www.milb.com/player/carson-montgomery-691000",
-    "Colton Vincent":     "https://www.milb.com/player/colton-vincent-694294",
-    "Max Williams":       "https://www.milb.com/player/max-williams-703637",
-    "Drew Faurot":        "https://www.milb.com/player/drew-faurot-702656",
-    "Joey Volini":        "https://www.milb.com/player/joey-volini-804123",
-    "Cam Leiter":         "https://www.milb.com/player/cam-leiter-804942",
-    "Peyton Prescott":    "https://www.milb.com/player/peyton-prescott-807290",
-    "Evan Chrest":        "https://www.milb.com/player/evan-chrest-805971",
-    "Gage Harrelson":     "https://www.milb.com/player/gage-harrelson-702629",
-    "Jaxson West":        "https://www.milb.com/player/jaxson-west-702486",
-    "Maison Martinez":    "https://www.milb.com/player/maison-martinez-824506",
-}
 
 # ── Player ID Cache ───────────────────────────────────────────────────────────
 def load_cache():
@@ -119,7 +79,8 @@ def find_player_id(name: str, cache: dict) -> int | None:
 
 # ── Stats Fetching ────────────────────────────────────────────────────────────
 def get_player_stats(person_id: int, season: int, level: str = "") -> dict:
-    """Fetch hitting and pitching stats for the current season only."""
+    """Fetch hitting and pitching stats using the player's level to target
+    the correct sport ID (e.g. AAA=11, AA=12) for a clean single API call."""
     stats = {"hitting": {}, "pitching": {}, "season_used": season}
     sport_id = LEVEL_SPORT_ID.get(level)
     if sport_id is None:
@@ -137,8 +98,9 @@ def get_player_stats(person_id: int, season: int, level: str = "") -> dict:
             if splits and splits[0].get("splits"):
                 stats[group] = splits[0]["splits"][0].get("stat", {})
         except Exception as e:
-            print(f"  ! Stats error for {person_id} ({group}): {e}")
+            print(f"    ! Stats error for {person_id} ({group}): {e}")
     return stats
+
 # ── Read Roster from Excel ────────────────────────────────────────────────────
 def read_roster() -> list[dict]:
     import openpyxl
@@ -147,27 +109,12 @@ def read_roster() -> list[dict]:
     players = []
     for row in ws.iter_rows(min_row=2, max_row=ws.max_row, values_only=True):
         name, pos, org, level, team = row[0], row[1], row[2], row[3], row[4]
-        draft_year  = row[5] if len(row) > 5 else None
-        draft_round = row[6] if len(row) > 6 else None
-        draft_pick  = row[7] if len(row) > 7 else None
-        notes       = row[9] if len(row) > 9 else None
-        milb_url    = MILB_URLS.get(name, "")
-        if draft_round and str(draft_round).upper() in ("UDFA", "CB-A"):
-            draft_str = f"{draft_year} · {draft_round}" if draft_year else str(draft_round)
-        elif draft_year and draft_round:
-            pick_str  = f" (Pick #{draft_pick})" if draft_pick and str(draft_pick) != "—" else ""
-            draft_str = f"{draft_year} · Rd {draft_round}{pick_str}"
-        else:
-            draft_str = str(draft_year) if draft_year else ""
+        milb_url = row[10] if len(row) > 10 else None
         if name:
-            override = LEVEL_OVERRIDES.get(name, {})
             players.append({
                 "name": name, "position": pos or "",
-                "org":   override.get("org",   org   or ""),
-                "level": override.get("level", level or ""),
-                "team":  override.get("team",  team  or ""),
-                "milb_url": milb_url,
-                "draft_info": draft_str, "notes": notes or ""
+                "org": org or "", "level": level or "",
+                "team": team or "", "milb_url": milb_url or ""
             })
     return players
 
@@ -303,8 +250,189 @@ def update_excel(player_data: list[dict]):
     wb.save(EXCEL_PATH)
     print(f"  ✓ Excel 'Stats' sheet updated ({len(player_data)} players)")
 
+# ── Auto-News Generation ──────────────────────────────────────────────────────
+LEVEL_RANK = {"MLB": 0, "AAA": 1, "AA": 2, "High-A": 3, "Low-A": 4, "Rookie": 5, "Independent": 6}
+
+def load_news_cache() -> dict:
+    if NEWS_CACHE_PATH.exists():
+        with open(NEWS_CACHE_PATH) as f:
+            return json.load(f)
+    return {}
+
+def save_news_cache(cache: dict):
+    with open(NEWS_CACHE_PATH, "w") as f:
+        json.dump(cache, f, indent=2)
+
+def _news_card(date_str: str, headline: str, body: str, tag: str) -> str:
+    return (f'<div class="news-card">'
+            f'<div class="news-date">{date_str}</div>'
+            f'<h4>{headline}</h4>'
+            f'<p>{body}</p>'
+            f'<span class="news-tag">{tag}</span>'
+            f'</div>')
+
+def generate_news_cards(player_data: list[dict]) -> str:
+    """Detect real events from live stats data and build news card HTML.
+
+    Events detected (in priority order):
+      1. MLB debut — player at MLB level who was not there last run
+      2. Promotion — player moved up at least one level since last run
+      3. Pitching milestone — ERA ≤ 2.00 with ≥ 5 IP
+      4. Hitting milestone — AVG ≥ .340 with ≥ 10 AB, or ≥ 5 HR
+      5. Season-summary fallback card (always included if < 4 events)
+    """
+    news_cache = load_news_cache()
+    today = datetime.now()
+    date_str = today.strftime("%B %Y")
+    cards = []
+
+    mlb_players  = [p for p in player_data if p.get("level") == "MLB"]
+    mlb_count    = len(mlb_players)
+    total        = len(player_data)
+    orgs         = len(set(p["org"] for p in player_data if p.get("org")))
+
+    # ── 1. MLB debuts ──────────────────────────────────────────────────────────
+    for p in player_data:
+        if len(cards) >= 4:
+            break
+        name  = p["name"]
+        level = p.get("level", "")
+        prev  = news_cache.get(name, {}).get("level", "")
+        if level == "MLB" and prev and prev != "MLB":
+            pos  = p.get("position", "")
+            team = p.get("team", "")
+            role = "left-hander" if "LHP" in pos else ("right-hander" if "RHP" in pos else "infielder" if pos in ("1B","2B","3B","SS") else "outfielder" if pos in ("LF","CF","RF","OF") else "catcher" if pos == "C" else "player")
+            cards.append(_news_card(
+                date_str,
+                f"{name} Reaches the Major Leagues",
+                f"Former Seminole {role} {name} has been promoted to the {team}, "
+                f"earning a spot on an MLB roster this season. Another Nole makes it to The Show.",
+                "MLB Debut"
+            ))
+
+    # ── 2. Promotions (non-MLB) ────────────────────────────────────────────────
+    for p in player_data:
+        if len(cards) >= 4:
+            break
+        name  = p["name"]
+        level = p.get("level", "")
+        prev  = news_cache.get(name, {}).get("level", "")
+        if not prev or level == "MLB":
+            continue
+        if level in LEVEL_RANK and prev in LEVEL_RANK and LEVEL_RANK[level] < LEVEL_RANK[prev]:
+            team = p.get("team", "")
+            org  = p.get("org", "")
+            org_note = f" in the {org} system" if org else ""
+            cards.append(_news_card(
+                date_str,
+                f"{name} Promoted to {level}",
+                f"FSU alum {name} has moved up to {level}{org_note}, now suiting up "
+                f"for the {team}. The Seminole pipeline keeps producing.",
+                "Promotion"
+            ))
+
+    # ── 3. Pitching milestones ─────────────────────────────────────────────────
+    for p in player_data:
+        if len(cards) >= 4:
+            break
+        if not is_pitcher(p.get("position", "")):
+            continue
+        stats = p.get("stats_fmt", {})
+        try:
+            era  = float(stats.get("ERA", "99").replace("—","99"))
+            ip   = float(stats.get("IP",  "0").replace("—","0"))
+            whip = float(stats.get("WHIP","99").replace("—","99"))
+        except ValueError:
+            continue
+        if ip >= 5 and era <= 2.00:
+            name  = p["name"]
+            level = p.get("level", "")
+            team  = p.get("team", "")
+            cards.append(_news_card(
+                date_str,
+                f"{name} Dealing Early in {SEASON}",
+                f"FSU alum {name} is off to a dominant start at {level} for the {team}, "
+                f"posting a {era:.2f} ERA and {whip:.2f} WHIP through {ip:.1f} innings pitched.",
+                "Hot Start"
+            ))
+
+    # ── 4. Hitting milestones ──────────────────────────────────────────────────
+    for p in player_data:
+        if len(cards) >= 4:
+            break
+        if is_pitcher(p.get("position", "")):
+            continue
+        stats = p.get("stats_fmt", {})
+        try:
+            avg = float(stats.get("AVG","0").replace("—","0").lstrip(".") and stats.get("AVG","0") or "0")
+            ab  = int(stats.get("AB", "0").replace("—","0"))
+            hr  = int(stats.get("HR", "0").replace("—","0"))
+            ops = float(stats.get("OPS","0").replace("—","0") or "0")
+        except ValueError:
+            continue
+        milestone = None
+        if ab >= 10 and avg >= 0.340:
+            milestone = f"batting .{int(avg*1000):03d} with {hr} HR and {stats.get('RBI','—')} RBI"
+        elif hr >= 5:
+            milestone = f"slugging {hr} home runs with a {ops:.3f} OPS"
+        if milestone:
+            name  = p["name"]
+            level = p.get("level", "")
+            team  = p.get("team", "")
+            cards.append(_news_card(
+                date_str,
+                f"{name} Raking at {level}",
+                f"Former Seminole {name} is putting up big numbers for the {team}, "
+                f"{milestone} on the season. The bat is very much alive.",
+                "Hot Bat"
+            ))
+
+    # ── 5. Fallback season summary (fills remaining slots) ─────────────────────
+    fallback_cards = [
+        _news_card(
+            date_str,
+            f"{SEASON} Season Underway — {total} Noles in Pro Ball",
+            f"With {total} FSU alumni tracked across {orgs} organizations — including "
+            f"{mlb_count} on active MLB rosters — the Seminole pipeline is as strong as ever. "
+            f"Stats update daily throughout the season.",
+            "Season Update"
+        ),
+        _news_card(
+            date_str,
+            "Minor League Pipeline Loaded with FSU Talent",
+            f"From Single-A to Triple-A, former Seminoles are climbing through organizations "
+            f"across the league. Check the roster below for current stats at every level.",
+            "Minor Leagues"
+        ),
+        _news_card(
+            date_str,
+            "Stats Updating Daily",
+            "Noles in the Show pulls live data from the MLB Stats API every morning. "
+            "Bookmark this page and check back throughout the season for the latest numbers.",
+            "Site Update"
+        ),
+    ]
+    for fb in fallback_cards:
+        if len(cards) >= 4:
+            break
+        cards.append(fb)
+
+    # ── Update level cache for next run ───────────────────────────────────────
+    for p in player_data:
+        name  = p["name"]
+        level = p.get("level", "")
+        if level:
+            entry = news_cache.get(name, {})
+            entry["level"] = level
+            entry["last_seen"] = today.strftime("%Y-%m-%d")
+            news_cache[name] = entry
+    save_news_cache(news_cache)
+
+    return "\n    ".join(cards[:4])
+
+
 # ── Generate HTML Dashboard ───────────────────────────────────────────────────
-def generate_html(player_data: list[dict]):
+def generate_html(player_data: list[dict], news_html: str = ""):
     updated = datetime.now().strftime("%B %d, %Y at %I:%M %p")
 
     levels_order = ["MLB", "AAA", "AA", "High-A", "Low-A", "Rookie", "Independent"]
@@ -331,107 +459,46 @@ def generate_html(player_data: list[dict]):
     def photo_url(p):
         mid = p.get("mlb_id")
         base = "https://img.mlbstatic.com/mlb-photos/image/upload"
+        fallback = "d_people:generic:headshot:67:current.png"
         pid = mid if mid else "000000"
-        # MLB players use the "67" style; MiLB players use "milb" style
-        style = "67" if p.get("level") == "MLB" else "milb"
-        return f"{base}/w_120,q_auto:best/v1/people/{pid}/headshot/{style}/current"
-
-    # ── Card stat strip ──────────────────────────────────────────────────────
-    def card_stat_strip(stats, pitcher):
-        if not stats:
-            return '<div class="no-stats-strip">No 2026 stats yet</div>'
-        if pitcher:
-            keys = [("W","W"),("L","L"),("SV","SV"),("IP","IP"),("ERA","ERA"),("WHIP","WHIP"),("K","K"),("G","G")]
-            extra = ' cs-p'
-            cols = 8
-        else:
-            keys = [("G","G"),("AB","AB"),("AVG","AVG"),("H","H"),("HR","HR"),("RBI","RBI")]
-            extra = ' cs-p'
-            cols = 6
-        cells = "".join(
-            f'<div class="cs{extra}"><div class="cs-val">{stats.get(k,"—")}</div>'
-            f'<div class="cs-lbl">{lbl}</div></div>'
-            for k, lbl in keys
-        )
-        return f'<div class="card-stats-strip" style="grid-template-columns:repeat({cols},1fr)">{cells}</div>'
-
-    # ── Modal stats table ─────────────────────────────────────────────────────
-    def modal_stats_html(stats, pitcher):
-        if not stats:
-            return '<div class="no-stats-modal">No stats yet — season in progress</div>'
-        hdrs = ["G","GS","W","L","SV","IP","ERA","WHIP","K","BB"] if pitcher else \
-               ["G","AB","AVG","HR","RBI","R","SB","OBP","SLG","OPS"]
-        th = "".join(f"<th>{h}</th>" for h in hdrs)
-        td = "".join(f"<td>{stats.get(h,'—')}</td>" for h in hdrs)
-        return (f'<table class="modal-stats-table"><thead><tr>{th}</tr></thead>'
-                f'<tbody><tr>{td}</tr></tbody></table>')
+        return f"{base}/{fallback}/w_120,q_auto:best/v1/people/{pid}/headshot/67/current"
 
     # ── Card view ─────────────────────────────────────────────────────────────
-    def player_card(p, idx):
-        stats   = p.get("stats_fmt", {})
-        lvl     = p["level"]
-        color   = level_colors.get(lvl, "#555")
-        txt     = "#333" if lvl in light_levels else "white"
+    def player_card(p):
+        stats = p.get("stats_fmt", {})
+        lvl   = p["level"]
+        color = level_colors.get(lvl, "#555")
+        txt   = "#333" if lvl in light_levels else "white"
         pitcher = is_pitcher(p["position"])
-        strip   = card_stat_strip(stats, pitcher)
-        draft   = p.get("draft_info", "")
-        initials = "".join(w[0].upper() for w in p["name"].split()[:2])
-        return (
-            f'<div class="card" data-level="{lvl}" data-name="{p["name"].lower()}" '
-            f'onclick="openModal({idx})" style="cursor:pointer">'
-            f'<div class="card-top" style="background:{color}"></div>'
-            f'<div class="card-main">'
-            f'<div class="card-photo-wrap">'
-            f'<div class="card-photo-init">{initials}</div>'
-            f'<img class="card-photo" src="{photo_url(p)}" alt="{p["name"]}" '
-            f'onload="if(this.naturalWidth<10)this.style.display=\'none\'" '
-            f'onerror="var t=this,s=t.src;if(!t.dataset.tried){{t.dataset.tried=1;'
-            f't.src=s.includes(\'/67/\')?s.replace(\'/67/\',\'/milb/\'):s.replace(\'/milb/\',\'/67/\');}}'
-            f'else{{t.style.display=\'none\';}}">'
-            f'</div>'
-            f'<div class="card-info">'
-            f'<div class="card-name">{p["name"]}</div>'
-            f'<div class="card-pos-team">{p["position"]} · {p["team"]}</div>'
-            f'<span class="lvl-badge" style="background:{color};color:{txt}">{lvl}</span>'
-            f'<div class="card-draft">{draft}</div>'
-            f'</div>'
-            f'</div>'
-            f'{strip}'
-            f'</div>'
+        stat_keys = ([("ERA","ERA"),("IP","IP"),("W","W"),("L","L"),
+                      ("SV","SV"),("K","K"),("BB","BB"),("WHIP","WHIP")]
+                     if pitcher else
+                     [("AVG","AVG"),("HR","HR"),("RBI","RBI"),("OPS","OPS"),("OBP","OBP"),
+                      ("G","G"),("AB","AB"),("H","H"),("R","R"),("SB","SB")])
+        stats_html = "".join(
+            f'<div class="stat"><div class="stat-val">{stats.get(k,"—")}</div>'
+            f'<div class="stat-lbl">{lbl}</div></div>'
+            for k, lbl in stat_keys
         )
+        no_data_msg = ('<div class="no-data">Season not started or not in MLB system</div>'
+                       if not stats else "")
+        org_line = (f'<div class="card-org">⬆ {p["org"]}</div>'
+                    if lvl != "MLB" and p.get("org") else "")
+        return f'''
+        <div class="card" data-level="{lvl}" data-name="{p["name"].lower()}">
+          <div class="card-header" style="background:{color};color:{txt}">
+            <img class="card-photo" src="{photo_url(p)}" alt="{p["name"]}" onerror="this.style.display='none'">
+            <div class="card-info">
+              <div class="card-name">{f'<a href="{p["milb_url"]}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">{p["name"]}</a>' if p.get("milb_url") else p["name"]}</div>
+              <div class="card-meta">{p["position"]} · {p["team"]}</div>
+              {org_line}
+            </div>
+          </div>
+          <div class="card-level" style="color:{color}">{lvl}</div>
+          <div class="card-stats">{stats_html}{no_data_msg}</div>
+        </div>'''
 
-    cards_html = "\n".join(player_card(p, i) for i, p in enumerate(sorted_players))
-
-    # ── Build modal JSON (done outside f-string to avoid brace conflicts) ─────
-    import json as _json
-    modal_players = []
-    for p in sorted_players:
-        stats   = p.get("stats_fmt", {})
-        pitcher = is_pitcher(p["position"])
-        lvl     = p["level"]
-        team_line = p["team"] if p["team"] == p["org"] else f'{p["team"]} ({p["org"]})'
-        meta_html = (
-            f'<strong>{p["position"]}</strong> · {team_line}<br>'
-            f'<span style="color:#888">{lvl}</span>'
-        )
-        modal_players.append({
-            "name":      p["name"],
-            "posTeam":   f'{p["position"]} · {team_line}',
-            "pos":       p["position"],
-            "org":       p["org"],
-            "team":      p["team"],
-            "lvl":       lvl,
-            "color":     level_colors.get(lvl, "#555"),
-            "txt":       "#333" if lvl in light_levels else "white",
-            "draft":     p.get("draft_info", ""),
-            "notes":     p.get("notes", "") or "",
-            "milb_url":  p.get("milb_url", ""),
-            "photo":     photo_url(p),
-            "initials":  "".join(w[0].upper() for w in p["name"].split()[:2]),
-            "metaHtml":  meta_html,
-            "statsHtml": modal_stats_html(stats, pitcher),
-        })
-    modal_json_str = _json.dumps(modal_players, ensure_ascii=False)
+    cards_html = "\n".join(player_card(p) for p in sorted_players)
 
     # ── List/table view ───────────────────────────────────────────────────────
     def table_row(p):
@@ -457,7 +524,7 @@ def generate_html(player_data: list[dict]):
           </td>
           <td><span class="lvl-badge" style="background:{color};color:{txt}">{lvl}</span></td>
           <td class="td-team">{p["team"]}</td>
-          <td class="td-org col-org">{org_cell}</td>
+          <td class="td-org">{org_cell}</td>
           <td class="td-stat"><span class="stat-lbl-sm">{s1_lbl}</span> {s1_val}</td>
           <td class="td-stat"><span class="stat-lbl-sm">{s2_lbl}</span> {s2_val}</td>
           <td class="td-stat"><span class="stat-lbl-sm">{s3_lbl}</span> {s3_val}</td>
@@ -480,10 +547,6 @@ def generate_html(player_data: list[dict]):
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Noles in the Show — {SEASON} Stats</title>
-<link rel="icon" type="image/png" href="logo.png">
-<link rel="apple-touch-icon" href="logo.png">
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4259331118703482"
-     crossorigin="anonymous"></script>
 <style>
 :root {{
   --garnet: #782F40; --garnet-dark: #5a1f2d; --garnet-light: #9e4055;
@@ -500,8 +563,9 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
        justify-content: space-between; position: sticky; top: 0; z-index: 100;
        box-shadow: 0 2px 8px rgba(0,0,0,0.25); }}
 .nav-brand {{ display: flex; align-items: center; gap: 10px; padding: 14px 0; text-decoration: none; }}
-.nav-logo {{ width: 48px; height: 48px; border-radius: 6px; flex-shrink: 0;
-              object-fit: cover; display: block; }}
+.nav-logo {{ width: 36px; height: 36px; background: var(--gold); border-radius: 50%;
+              display: flex; align-items: center; justify-content: center;
+              font-weight: 900; font-size: 16px; color: var(--garnet); flex-shrink: 0; }}
 .nav-title {{ color: white; font-weight: 700; font-size: 1.1rem; }}
 .nav-sub   {{ color: var(--gold); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; }}
 .nav-links {{ display: flex; gap: 2px; margin: 0 24px; }}
@@ -616,78 +680,28 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
 .links-list .link-sub {{ font-size: 0.72rem; color: #aaa; display: block; margin-top: 1px; }}
 
 /* ── Card grid ── */
-.grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }}
+.grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }}
 .card {{ background: white; border-radius: 10px; overflow: hidden;
-         box-shadow: var(--shadow); transition: transform .15s, box-shadow .15s;
-         cursor: pointer; }}
-.card:hover {{ transform: translateY(-2px); box-shadow: 0 6px 20px rgba(120,47,64,0.18); }}
+         box-shadow: var(--shadow); transition: transform .15s, box-shadow .15s; }}
+.card:hover {{ transform: translateY(-2px); box-shadow: 0 6px 20px rgba(120,47,64,0.15); }}
 .card.hidden {{ display: none; }}
-/* horizontal card */
-.card-top {{ height: 5px; }}
-.card-main {{ display: flex; align-items: center; gap: 12px; padding: 10px 14px 8px; }}
-.card-photo-wrap {{ position:relative; width:54px; height:54px; flex-shrink:0; border-radius:50%; }}
-.card-photo-init {{ position:absolute; inset:0; border-radius:50%; background:#782F40;
-                    color:#CEB888; font-size:1.1rem; font-weight:700;
-                    display:flex; align-items:center; justify-content:center; }}
-.card-photo {{ position:absolute; inset:0; width:54px; height:54px; border-radius:50%;
-               object-fit:cover; border:2px solid #eee; background:transparent; }}
+.card-header {{ padding: 14px 16px; color: white; display: flex; align-items: center; gap: 12px; }}
+.card-photo {{ width: 54px; height: 54px; border-radius: 50%; object-fit: cover;
+               border: 2px solid rgba(255,255,255,0.4); flex-shrink: 0; background: rgba(255,255,255,0.15); }}
 .card-info {{ flex: 1; min-width: 0; }}
-.card-name {{ font-size: 0.92rem; font-weight: 700; color: #1a1a1a; white-space: nowrap;
-              overflow: hidden; text-overflow: ellipsis; }}
-.card-pos-team {{ font-size: 0.7rem; color: #888; margin: 1px 0 4px;
-                  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
-.card-draft {{ font-size: 0.65rem; color: #aaa; margin-top: 3px; }}
-/* stat strip on card */
-.card-stats-strip {{ display: grid; grid-template-columns: repeat(4, 1fr);
-                     border-top: 1px solid #f0f0f0; padding: 6px 14px 8px; gap: 4px; }}
-.cs {{ text-align: center; }}
-.cs-val {{ font-size: 0.88rem; font-weight: 700; color: var(--garnet); }}
-.cs-lbl {{ font-size: 0.56rem; color: #bbb; text-transform: uppercase; margin-top: 1px; }}
-.cs-p .cs-val {{ font-size: 0.72rem; }}
-.cs-p .cs-lbl {{ font-size: 0.5rem; }}
-.no-stats-strip {{ grid-column: 1/-1; text-align: center; color: #ccc; font-size: 0.68rem;
-                   font-style: italic; padding: 4px 0; }}
-/* ── Modal ── */
-.modal-overlay {{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.55);
-                  z-index:1000; justify-content:center; align-items:flex-start;
-                  overflow-y:auto; padding: 40px 16px; }}
-.modal-overlay.open {{ display:flex; }}
-.modal-box {{ background:white; border-radius:14px; width:100%; max-width:520px;
-              box-shadow:0 20px 60px rgba(0,0,0,.3); overflow:hidden;
-              animation: modalIn .2s ease; }}
-@keyframes modalIn {{ from {{opacity:0;transform:translateY(-20px)}} to {{opacity:1;transform:translateY(0)}} }}
-.modal-header {{ background: var(--garnet); color:white;
-                 padding: 20px 20px 16px; position:relative; }}
-.modal-header h2 {{ margin:0; font-size:1.2rem; font-weight:700; }}
-.modal-header .mh-sub {{ font-size:0.78rem; opacity:.8; margin-top:4px; }}
-.modal-close {{ position:absolute; top:14px; right:16px; background:rgba(255,255,255,.2);
-                border:none; color:white; font-size:1.2rem; cursor:pointer;
-                border-radius:50%; width:32px; height:32px; display:flex;
-                align-items:center; justify-content:center; line-height:1; }}
-.modal-close:hover {{ background:rgba(255,255,255,.35); }}
-.modal-body {{ padding: 20px; }}
-.modal-photo-wrap {{ position:relative; width:80px; height:80px; float:right; margin:0 0 12px 16px;
-                     border-radius:50%; border:3px solid var(--border); flex-shrink:0; }}
-.modal-photo-init {{ position:absolute; inset:0; border-radius:50%; background:#782F40;
-                     color:#CEB888; font-size:1.6rem; font-weight:700;
-                     display:flex; align-items:center; justify-content:center; }}
-.modal-photo {{ position:absolute; inset:0; width:100%; height:100%; border-radius:50%; object-fit:cover; }}
-.modal-meta {{ font-size:0.82rem; color:#555; line-height:1.7; }}
-.modal-meta strong {{ color:#222; }}
-.modal-stats-table {{ width:100%; border-collapse:collapse; margin-top:14px;
-                      font-size:0.83rem; clear:both; }}
-.modal-stats-table th {{ background:var(--garnet); color:white; padding:6px 10px;
-                          font-size:0.72rem; font-weight:600; text-transform:uppercase;
-                          letter-spacing:.04em; text-align:center; }}
-.modal-stats-table td {{ padding:7px 10px; border-bottom:1px solid #eee;
-                          text-align:center; color:#333; font-weight:600; }}
-.modal-stats-table tr:last-child td {{ border-bottom:none; }}
-.modal-stats-table .lbl-col {{ text-align:left; color:#888; font-weight:400; }}
-.modal-draft {{ margin-top:12px; font-size:0.78rem; color:#777; }}
-.modal-notes {{ margin-top:8px; font-size:0.8rem; color:#555;
-                background:#fafafa; border-radius:6px; padding:8px 12px;
-                border-left:3px solid var(--garnet); }}
-.no-stats-modal {{ color:#bbb; font-style:italic; font-size:0.82rem; text-align:center; padding:16px 0; }}
+.card-name {{ font-size: 1rem; font-weight: 700; }}
+.card-meta {{ font-size: 0.75rem; opacity: 0.85; margin-top: 2px; }}
+.card-org  {{ font-size: 0.65rem; opacity: 0.75; margin-top: 3px; font-style: italic; }}
+.card-level {{ font-size: 0.68rem; font-weight: 700; letter-spacing: .5px;
+               text-transform: uppercase; padding: 6px 16px 0; }}
+.card-stats {{ display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px 12px 14px; gap: 6px; }}
+.stat {{ text-align: center; }}
+.stat-val {{ font-size: 1rem; font-weight: 700; color: var(--garnet); }}
+.stat-lbl {{ font-size: 0.62rem; color: #999; text-transform: uppercase; margin-top: 1px; }}
+.no-data {{ grid-column: 1/-1; text-align: center; color: #bbb;
+            font-size: 0.78rem; padding: 8px 0; font-style: italic; }}
+.season-note {{ text-align: center; font-size: 0.68rem; color: #aaa;
+                font-style: italic; padding: 2px 0 6px; }}
 
 /* ── List/Table view ── */
 .list-wrap {{ display: none; }}
@@ -750,30 +764,22 @@ footer a {{ color: var(--gold); text-decoration: none; }}
   .search-box {{ width: 130px; }}
   .view-toggle {{ margin-left: 0; }}
   .roster-layout {{ padding: 12px 16px; }}
-  .grid {{ grid-template-columns: 1fr; gap: 8px; }}
-  .card-photo {{ width: 46px; height: 46px; }}
-  .card-name {{ font-size: 0.85rem; }}
-  .cs-val {{ font-size: 0.8rem; }}
-  .cs-lbl {{ font-size: 0.5rem; }}
-  .modal-box {{ max-width: 100%; margin: 0; border-radius: 10px; }}
+  .grid {{ grid-template-columns: 1fr 1fr; gap: 10px; }}
+  .card-stats {{ grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 8px 8px 10px; }}
+  .stat-val {{ font-size: 0.85rem; }}
+  .stat-lbl {{ font-size: 0.55rem; }}
+  .card-photo {{ width: 42px; height: 42px; }}
+  .card-name {{ font-size: 0.88rem; }}
+  .card-meta {{ font-size: 0.68rem; }}
   .roster-sidebar {{ flex-direction: column; }}
   .sidebar-widget {{ min-width: unset; }}
   .section-wrap {{ padding: 0 16px; }}
   .news-grid-wrap {{ grid-template-columns: 1fr; }}
   .about-box {{ padding: 18px 16px; }}
   table {{ font-size: 0.78rem; }}
-  td, thead th {{ padding: 6px 8px; }}
+  td, thead th {{ padding: 8px 10px; }}
   .row-photo {{ width: 28px; height: 28px; }}
   footer {{ padding: 18px 16px; }}
-  /* List view: hide less critical columns on mobile */
-  .td-org, .col-org {{ display: none; }}
-  .td-stat:nth-child(6), .td-stat:nth-child(7) {{ display: none; }}
-  thead th:nth-child(4) {{ display: none; }}
-  thead th:nth-child(6), thead th:nth-child(7) {{ display: none; }}
-  /* Wrap table in scrollable container */
-  .list-table-wrap {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
-  .td-name {{ white-space: normal; min-width: 120px; }}
-  .td-team {{ font-size: 0.75rem; }}
 }}
 </style>
 </head>
@@ -782,7 +788,7 @@ footer a {{ color: var(--gold); text-decoration: none; }}
 <!-- Nav -->
 <nav>
   <a href="#home" class="nav-brand">
-    <img class="nav-logo" src="logo.png" alt="Noles in the Show">
+    <div class="nav-logo">N</div>
     <div>
       <div class="nav-title">Noles in the Show</div>
       <div class="nav-sub">FSU Baseball Alumni Tracker</div>
@@ -838,30 +844,7 @@ footer a {{ color: var(--gold); text-decoration: none; }}
 <div class="section-wrap" id="news">
   <div class="section-title">Latest News &amp; Updates</div>
   <div class="news-grid-wrap">
-    <div class="news-card">
-      <div class="news-date">April 2026</div>
-      <h4>Shane Drohan Called Up to Milwaukee Brewers</h4>
-      <p>Left-hander Shane Drohan earned his MLB debut with the Milwaukee Brewers this spring, fulfilling years of development through the minor league system. Follow his stats live on this site.</p>
-      <span class="news-tag">MLB Debut</span>
-    </div>
-    <div class="news-card">
-      <div class="news-date">April 2026</div>
-      <h4>Cal Raleigh Anchors Seattle Mariners Lineup</h4>
-      <p>Former Seminole catcher Cal Raleigh continues to be one of the most dangerous bats in the American League, leading Seattle's offense early in the 2026 season.</p>
-      <span class="news-tag">MLB</span>
-    </div>
-    <div class="news-card">
-      <div class="news-date">April 2026</div>
-      <h4>2026 Season Underway — 40 Noles in Pro Ball</h4>
-      <p>With 40 FSU alumni tracked across 24 organizations — including 8 on active MLB rosters — the Seminole pipeline is as deep as ever to start the 2026 campaign.</p>
-      <span class="news-tag">Season Update</span>
-    </div>
-    <div class="news-card">
-      <div class="news-date">April 2026</div>
-      <h4>Minor League Pipeline Loaded with FSU Talent</h4>
-      <p>From Single-A to Triple-A, former Seminoles are climbing through organizations across all 30 MLB clubs. Check the Roster tab to follow their journeys.</p>
-      <span class="news-tag">Minor Leagues</span>
-    </div>
+    {news_html}
   </div>
 </div>
 
@@ -887,18 +870,16 @@ footer a {{ color: var(--gold); text-decoration: none; }}
     </div>
     <div class="list-wrap" id="listWrap">
       <div class="roster-card">
-        <div class="list-table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Player</th><th>Level</th><th>Team</th><th class="col-org">Organization</th><th>Stat 1</th><th>Stat 2</th><th>Stat 3</th>
+              <th>Player</th><th>Level</th><th>Team</th><th>Organization</th><th colspan="3">Key Stats</th>
             </tr>
           </thead>
           <tbody id="listBody">
 {rows_html}
           </tbody>
         </table>
-        </div>
       </div>
     </div>
   </div>
@@ -972,29 +953,6 @@ footer a {{ color: var(--gold); text-decoration: none; }}
   </div>
 </div>
 
-<!-- Modal overlay -->
-<div class="modal-overlay" id="modalOverlay" onclick="maybeClose(event)">
-  <div class="modal-box" id="modalBox">
-    <div class="modal-header">
-      <h2 id="mName">Player</h2>
-      <div class="mh-sub" id="mSub"></div>
-      <button class="modal-close" onclick="closeModal()">&#x2715;</button>
-    </div>
-    <div class="modal-body">
-      <div class="modal-photo-wrap">
-        <div class="modal-photo-init" id="mPhotoInit"></div>
-        <img class="modal-photo" id="mPhoto" src="" alt=""
-          onload="if(this.naturalWidth<10)this.style.display='none'"
-          onerror="var t=this,s=t.src;if(!t.dataset.tried){{t.dataset.tried=1;t.src=s.includes('/67/')?s.replace('/67/','/milb/'):s.replace('/milb/','/67/');}}else{{t.style.display='none';}}">
-      </div>
-      <div class="modal-meta" id="mMeta"></div>
-      <div id="mStatsSection"></div>
-      <div class="modal-draft" id="mDraft"></div>
-      <div class="modal-notes" id="mNotes" style="display:none"></div>
-    </div>
-  </div>
-</div>
-
 <!-- Twitter widget script -->
 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
@@ -1002,55 +960,12 @@ footer a {{ color: var(--gold); text-decoration: none; }}
 <footer>
   <p><strong style="color:white">Noles in the Show</strong> · Fan site, not affiliated with FSU or MLB.</p>
   <p style="margin-top:6px;">Data sourced from <a href="https://statsapi.mlb.com">MLB Stats API</a> · {SEASON} Season</p>
-  <p style="margin-top:6px;"><a href="privacy.html">Privacy Policy</a></p>
 </footer>
 
 <script>
-MODAL_DATA_PLACEHOLDER
-
 let currentLevel = 'all';
 let currentSearch = '';
 let currentView = 'cards';
-
-function openModal(idx) {{
-  const p = MODAL_DATA[idx];
-  if (!p) return;
-  document.getElementById('mName').textContent  = p.name;
-  document.getElementById('mSub').textContent   = p.posTeam;
-  const mPhoto = document.getElementById('mPhoto');
-  const mPhotoInit = document.getElementById('mPhotoInit');
-  mPhotoInit.textContent = p.initials || '?';
-  mPhoto.dataset.tried = '';
-  mPhoto.style.display = '';
-  mPhoto.src = p.photo;
-  mPhoto.alt = p.name;
-  document.getElementById('mMeta').innerHTML    = p.metaHtml;
-  document.getElementById('mStatsSection').innerHTML = p.statsHtml;
-  const draftEl = document.getElementById('mDraft');
-  draftEl.textContent = p.draft ? '🎓 Draft: ' + p.draft : '';
-  const notesEl = document.getElementById('mNotes');
-  if (p.notes) {{
-    notesEl.textContent = p.notes;
-    notesEl.style.display = 'block';
-  }} else {{
-    notesEl.style.display = 'none';
-  }}
-  document.getElementById('modalOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}}
-
-function closeModal() {{
-  document.getElementById('modalOverlay').classList.remove('open');
-  document.body.style.overflow = '';
-}}
-
-function maybeClose(e) {{
-  if (e.target === document.getElementById('modalOverlay')) closeModal();
-}}
-
-document.addEventListener('keydown', function(e) {{
-  if (e.key === 'Escape') closeModal();
-}});
 
 function setView(v) {{
   currentView = v;
@@ -1062,12 +977,14 @@ function setView(v) {{
 
 function filterLevel(level, btn) {{
   currentLevel = level;
+  // Reset all buttons
   document.querySelectorAll('.filter-btn').forEach(b => {{
     b.classList.remove('active');
     b.style.background = '';
     b.style.borderColor = '';
     b.style.color = '';
   }});
+  // Style active button with its level color
   btn.classList.add('active');
   const c = btn.dataset.color || '#782F40';
   btn.style.background  = c;
@@ -1082,6 +999,7 @@ function applySearch(q) {{
   applyFilters();
 }}
 
+// ── Active nav highlighting on scroll ─────────────────────────────────────
 const navSections = ['home','roster','news','about'];
 function updateActiveNav() {{
   const scrollY = window.scrollY + 80;
@@ -1097,11 +1015,13 @@ function updateActiveNav() {{
 window.addEventListener('scroll', updateActiveNav, {{ passive: true }});
 
 function applyFilters() {{
+  // Cards
   document.querySelectorAll('.card').forEach(card => {{
     const levelMatch = currentLevel === 'all' || card.dataset.level === currentLevel;
     const nameMatch  = !currentSearch || card.dataset.name.includes(currentSearch);
     card.classList.toggle('hidden', !levelMatch || !nameMatch);
   }});
+  // Rows
   document.querySelectorAll('#listBody tr').forEach(row => {{
     const levelMatch = currentLevel === 'all' || row.dataset.level === currentLevel;
     const nameMatch  = !currentSearch || row.dataset.name.includes(currentSearch);
@@ -1111,10 +1031,6 @@ function applyFilters() {{
 </script>
 </body>
 </html>"""
-
-    # Inject modal data (done outside f-string to avoid brace conflicts)
-    html = html.replace("MODAL_DATA_PLACEHOLDER",
-                        f"const MODAL_DATA = {modal_json_str};")
 
     with open(HTML_PATH, "w", encoding="utf-8") as f:
         f.write(html)
@@ -1142,7 +1058,7 @@ def main():
             try:
                 pid = int(milb_url.rstrip("/").split("-")[-1])
                 cache[name] = pid
-                print(f"  \u2713 {name} \u2192 ID {pid} (from URL)")
+                print(f"  ✓ {name} → ID {pid} (from URL)")
             except (ValueError, IndexError):
                 pid = find_player_id(name, cache)
         else:
@@ -1165,8 +1081,11 @@ def main():
     print(f"\n→ Updating Excel spreadsheet...")
     update_excel(player_data)
 
+    print(f"\n→ Generating news cards from stats data...")
+    news_html = generate_news_cards(player_data)
+
     print(f"\n→ Generating HTML dashboard...")
-    generate_html(player_data)
+    generate_html(player_data, news_html)
 
     found = sum(1 for p in player_data if p.get("stats_fmt"))
     print(f"\n{'='*55}")
