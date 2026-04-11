@@ -109,12 +109,21 @@ def read_roster() -> list[dict]:
     players = []
     for row in ws.iter_rows(min_row=2, max_row=ws.max_row, values_only=True):
         name, pos, org, level, team = row[0], row[1], row[2], row[3], row[4]
-        milb_url = row[10] if len(row) > 10 else None
+        draft_year  = row[5] if len(row) > 5 else None
+        draft_round = row[6] if len(row) > 6 else None
+        draft_pick  = row[7] if len(row) > 7 else None
+        notes       = row[9] if len(row) > 9 else None
+        milb_url    = row[10] if len(row) > 10 else None
         if name:
+            draft_str = ""
+            if draft_year and draft_round:
+                pick_str = f" (Pick #{int(draft_pick)})" if draft_pick else ""
+                draft_str = f"{int(draft_year)} · Rd {int(draft_round)}{pick_str}"
             players.append({
                 "name": name, "position": pos or "",
                 "org": org or "", "level": level or "",
-                "team": team or "", "milb_url": milb_url or ""
+                "team": team or "", "milb_url": milb_url or "",
+                "draft": draft_str, "notes": str(notes).strip() if notes else ""
             })
     return players
 
@@ -517,17 +526,27 @@ def generate_html(player_data: list[dict], news_html: str = ""):
     # ── Photo URL helper ──────────────────────────────────────────────────────
     def photo_url(p):
         mid = p.get("mlb_id")
+        if not mid:
+            return ""
         base = "https://img.mlbstatic.com/mlb-photos/image/upload"
-        fallback = "d_people:generic:headshot:67:current.png"
-        pid = mid if mid else "000000"
-        return f"{base}/{fallback}/w_120,q_auto:best/v1/people/{pid}/headshot/67/current"
+        return f"{base}/w_120,q_auto:best/v1/people/{mid}/headshot/67/current"
+
+    PHOTO_ONERROR = (
+        "var t=this,s=t.src;"
+        "if(!t.dataset.tried){"
+        "t.dataset.tried=1;"
+        "t.src=s.includes('/67/')?s.replace('/67/','/milb/'):s.replace('/milb/','/67/');"
+        "}else{t.style.display='none';}"
+    )
 
     # ── Card view ─────────────────────────────────────────────────────────────
-    def player_card(p):
-        stats = p.get("stats_fmt", {})
-        lvl   = p["level"]
-        color = level_colors.get(lvl, "#555")
-        txt   = "#333" if lvl in light_levels else "white"
+    modal_data = []
+
+    def player_card(p, idx):
+        stats   = p.get("stats_fmt", {})
+        lvl     = p["level"]
+        color   = level_colors.get(lvl, "#555")
+        txt     = "#333" if lvl in light_levels else "white"
         pitcher = is_pitcher(p["position"])
         stat_keys = ([("ERA","ERA"),("IP","IP"),("W","W"),("L","L"),
                       ("SV","SV"),("K","K"),("BB","BB"),("WHIP","WHIP")]
@@ -543,12 +562,43 @@ def generate_html(player_data: list[dict], news_html: str = ""):
                        if not stats else "")
         org_line = (f'<div class="card-org">⬆ {p["org"]}</div>'
                     if lvl != "MLB" and p.get("org") else "")
+        purl = photo_url(p)
+        photo_tag = (f'<img class="card-photo" src="{purl}" alt="{p["name"]}" onerror="{PHOTO_ONERROR}">'
+                     if purl else
+                     f'<div class="card-photo-init">{p["name"][:2].upper()}</div>')
+
+        # Build modal stats table for this player
+        if pitcher:
+            mhdrs = ["G","GS","W","L","SV","IP","ERA","WHIP","K","BB"]
+        else:
+            mhdrs = ["G","AB","AVG","HR","RBI","R","SB","OBP","SLG","OPS"]
+        th = "".join(f"<th>{h}</th>" for h in mhdrs)
+        td = "".join(f"<td>{stats.get(h,'—')}</td>" for h in mhdrs)
+        stats_tbl = (f'<table class="modal-stats-table"><thead><tr>{th}</tr></thead>'
+                     f'<tbody><tr>{td}</tr></tbody></table>' if stats else
+                     '<p style="color:#aaa;font-style:italic;font-size:0.85rem;">No stats available yet this season.</p>')
+
+        initials = "".join(w[0] for w in p["name"].split()[:2]).upper()
+        modal_data.append({
+            "name":      p["name"],
+            "posTeam":   f'{p["position"]} · {p["team"]}',
+            "lvl":       lvl,
+            "color":     color,
+            "txt":       txt,
+            "draft":     p.get("draft", ""),
+            "notes":     p.get("notes", ""),
+            "photo":     purl,
+            "initials":  initials,
+            "statsHtml": stats_tbl,
+            "milbUrl":   p.get("milb_url", ""),
+        })
+
         return f'''
-        <div class="card" data-level="{lvl}" data-name="{p["name"].lower()}">
+        <div class="card" data-level="{lvl}" data-name="{p["name"].lower()}" onclick="openModal({idx})" style="cursor:pointer">
           <div class="card-header" style="background:{color};color:{txt}">
-            <img class="card-photo" src="{photo_url(p)}" alt="{p["name"]}" onerror="this.style.display='none'">
+            {photo_tag}
             <div class="card-info">
-              <div class="card-name">{f'<a href="{p["milb_url"]}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">{p["name"]}</a>' if p.get("milb_url") else p["name"]}</div>
+              <div class="card-name">{p["name"]}</div>
               <div class="card-meta">{p["position"]} · {p["team"]}</div>
               {org_line}
             </div>
@@ -557,7 +607,7 @@ def generate_html(player_data: list[dict], news_html: str = ""):
           <div class="card-stats">{stats_html}{no_data_msg}</div>
         </div>'''
 
-    cards_html = "\n".join(player_card(p) for p in sorted_players)
+    cards_html = "\n".join(player_card(p, i) for i, p in enumerate(sorted_players))
 
     # ── List/table view ───────────────────────────────────────────────────────
     def table_row(p):
@@ -578,7 +628,7 @@ def generate_html(player_data: list[dict], news_html: str = ""):
         return f'''
         <tr data-level="{lvl}" data-name="{p["name"].lower()}">
           <td class="td-name">
-            <img class="row-photo" src="{photo_url(p)}" alt="{p["name"]}" onerror="this.style.display='none'">
+            <img class="row-photo" src="{photo_url(p)}" alt="{p["name"]}" onerror="{PHOTO_ONERROR}">
             <span class="name-text">{f'<a href="{p["milb_url"]}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">{p["name"]}</a>' if p.get("milb_url") else p["name"]} <span class="pos-tag">{p["position"]}</span></span>
           </td>
           <td><span class="lvl-badge" style="background:{color};color:{txt}">{lvl}</span></td>
@@ -622,9 +672,8 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
        justify-content: space-between; position: sticky; top: 0; z-index: 100;
        box-shadow: 0 2px 8px rgba(0,0,0,0.25); }}
 .nav-brand {{ display: flex; align-items: center; gap: 10px; padding: 14px 0; text-decoration: none; }}
-.nav-logo {{ width: 36px; height: 36px; background: var(--gold); border-radius: 50%;
-              display: flex; align-items: center; justify-content: center;
-              font-weight: 900; font-size: 16px; color: var(--garnet); flex-shrink: 0; }}
+.nav-logo {{ width: 42px; height: 42px; border-radius: 6px; flex-shrink: 0;
+              object-fit: cover; display: block; }}
 .nav-title {{ color: white; font-weight: 700; font-size: 1.1rem; }}
 .nav-sub   {{ color: var(--gold); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; }}
 .nav-links {{ display: flex; gap: 2px; margin: 0 24px; }}
@@ -840,14 +889,77 @@ footer a {{ color: var(--gold); text-decoration: none; }}
   .row-photo {{ width: 28px; height: 28px; }}
   footer {{ padding: 18px 16px; }}
 }}
+
+/* ── Modal ── */
+.modal-overlay {{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.55);
+  z-index:1000; align-items:center; justify-content:center; padding:20px; }}
+.modal-overlay.open {{ display:flex; }}
+.modal-box {{ background:white; border-radius:14px; width:100%; max-width:520px;
+  box-shadow:0 20px 60px rgba(0,0,0,.3); animation:modalIn .2s ease; overflow:hidden; }}
+@keyframes modalIn {{ from {{opacity:0;transform:translateY(-20px)}} to {{opacity:1;transform:translateY(0)}} }}
+.modal-header {{ padding:18px 20px; position:relative; }}
+.modal-header h2 {{ margin:0; font-size:1.2rem; font-weight:700; }}
+.modal-header .mh-sub {{ font-size:0.78rem; opacity:.8; margin-top:4px; }}
+.modal-close {{ position:absolute; top:14px; right:16px; background:rgba(255,255,255,.2);
+  border:none; color:white; width:28px; height:28px; border-radius:50%; cursor:pointer;
+  font-size:1.1rem; display:flex; align-items:center; justify-content:center; line-height:1; }}
+.modal-close:hover {{ background:rgba(255,255,255,.35); }}
+.modal-body {{ padding:20px; }}
+.modal-photo-wrap {{ position:relative; width:72px; height:72px; float:right;
+  margin:0 0 12px 16px; flex-shrink:0; }}
+.modal-photo-init {{ position:absolute; inset:0; border-radius:50%; background:var(--garnet);
+  color:white; display:flex; align-items:center; justify-content:center;
+  font-weight:700; font-size:1.1rem; }}
+.modal-photo {{ position:absolute; inset:0; width:100%; height:100%;
+  border-radius:50%; object-fit:cover; }}
+.modal-meta {{ font-size:0.85rem; color:#555; line-height:1.8; margin-bottom:12px; }}
+.modal-meta strong {{ color:#222; }}
+.modal-draft {{ font-size:0.8rem; color:#888; margin-bottom:6px; }}
+.modal-notes {{ background:var(--gold-light); border-left:3px solid var(--gold-dark);
+  padding:8px 12px; border-radius:0 6px 6px 0; font-size:0.82rem;
+  color:#555; margin-bottom:14px; font-style:italic; }}
+.modal-stats-table {{ width:100%; border-collapse:collapse; font-size:0.82rem; margin-top:4px; }}
+.modal-stats-table th {{ background:var(--garnet); color:white; padding:6px 8px;
+  text-align:center; font-size:0.72rem; letter-spacing:.04em; }}
+.modal-stats-table td {{ padding:7px 8px; border-bottom:1px solid #eee;
+  text-align:center; font-weight:600; color:var(--garnet); }}
+.modal-milb-link {{ display:inline-block; margin-top:12px; font-size:0.8rem;
+  color:var(--garnet); border:1px solid var(--garnet); padding:4px 12px;
+  border-radius:12px; text-decoration:none; }}
+.modal-milb-link:hover {{ background:var(--garnet); color:white; }}
+.card-photo-init {{ width:54px; height:54px; border-radius:50%; background:rgba(255,255,255,.2);
+  display:flex; align-items:center; justify-content:center; font-weight:700;
+  font-size:1rem; flex-shrink:0; }}
 </style>
 </head>
 <body>
 
+<!-- Modal overlay -->
+<div class="modal-overlay" id="modalOverlay" onclick="maybeClose(event)">
+  <div class="modal-box">
+    <div class="modal-header" id="mHeader">
+      <h2 id="mName"></h2>
+      <div class="mh-sub" id="mSub"></div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-photo-wrap">
+        <div class="modal-photo-init" id="mPhotoInit"></div>
+        <img class="modal-photo" id="mPhoto" src="" alt="">
+      </div>
+      <div class="modal-draft" id="mDraft"></div>
+      <div class="modal-notes" id="mNotes" style="display:none"></div>
+      <div id="mStatsSection"></div>
+      <div style="clear:both"></div>
+      <a class="modal-milb-link" id="mMilbLink" href="#" target="_blank" rel="noopener" style="display:none">View on MiLB.com ↗</a>
+    </div>
+  </div>
+</div>
+
 <!-- Nav -->
 <nav>
   <a href="#home" class="nav-brand">
-    <div class="nav-logo">N</div>
+    <img class="nav-logo" src="logo.png" alt="Noles in the Show">
     <div>
       <div class="nav-title">Noles in the Show</div>
       <div class="nav-sub">FSU Baseball Alumni Tracker</div>
@@ -1022,6 +1134,66 @@ footer a {{ color: var(--gold); text-decoration: none; }}
 </footer>
 
 <script>
+const MODAL_DATA = {{modal_data_json}};
+
+function openModal(idx) {{
+  const p = MODAL_DATA[idx];
+  if (!p) return;
+  document.getElementById('mName').textContent = p.name;
+  document.getElementById('mSub').textContent  = p.posTeam;
+  const hdr = document.getElementById('mHeader');
+  hdr.style.background = p.color;
+  hdr.style.color = p.txt;
+  const mPhoto = document.getElementById('mPhoto');
+  const mInit  = document.getElementById('mPhotoInit');
+  mInit.textContent = p.initials || '?';
+  mPhoto.dataset.tried = '';
+  if (p.photo) {{
+    mPhoto.style.display = '';
+    mPhoto.src = p.photo;
+    mPhoto.alt = p.name;
+    mPhoto.onerror = function() {{
+      var t=this,s=t.src;
+      if(!t.dataset.tried){{t.dataset.tried=1;t.src=s.includes('/67/')?s.replace('/67/','/milb/'):s.replace('/milb/','/67/');}}
+      else{{t.style.display='none';}}
+    }};
+  }} else {{
+    mPhoto.style.display = 'none';
+  }}
+  const draftEl = document.getElementById('mDraft');
+  draftEl.textContent = p.draft ? '🎓 Draft: ' + p.draft : '';
+  const notesEl = document.getElementById('mNotes');
+  if (p.notes) {{
+    notesEl.textContent = p.notes;
+    notesEl.style.display = 'block';
+  }} else {{
+    notesEl.style.display = 'none';
+  }}
+  document.getElementById('mStatsSection').innerHTML = p.statsHtml;
+  const milbLink = document.getElementById('mMilbLink');
+  if (p.milbUrl) {{
+    milbLink.href = p.milbUrl;
+    milbLink.style.display = 'inline-block';
+  }} else {{
+    milbLink.style.display = 'none';
+  }}
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}}
+
+function closeModal() {{
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}}
+
+function maybeClose(e) {{
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}}
+
+document.addEventListener('keydown', function(e) {{
+  if (e.key === 'Escape') closeModal();
+}});
+
 let currentLevel = 'all';
 let currentSearch = '';
 let currentView = 'cards';
@@ -1090,6 +1262,10 @@ function applyFilters() {{
 </script>
 </body>
 </html>"""
+
+    # Inject modal data JSON (done after f-string so we don't need to escape it)
+    modal_json = json.dumps(modal_data, ensure_ascii=False)
+    html = html.replace("{modal_data_json}", modal_json)
 
     with open(HTML_PATH, "w", encoding="utf-8") as f:
         f.write(html)
