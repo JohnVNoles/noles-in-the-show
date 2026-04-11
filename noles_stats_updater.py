@@ -480,6 +480,8 @@ def generate_html(player_data: list[dict]):
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Noles in the Show — {SEASON} Stats</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4259331118703482"
      crossorigin="anonymous"></script>
 <style>
