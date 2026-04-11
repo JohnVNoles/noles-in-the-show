@@ -457,7 +457,7 @@ def generate_html(player_data: list[dict]):
           </td>
           <td><span class="lvl-badge" style="background:{color};color:{txt}">{lvl}</span></td>
           <td class="td-team">{p["team"]}</td>
-          <td class="td-org">{org_cell}</td>
+          <td class="td-org col-org">{org_cell}</td>
           <td class="td-stat"><span class="stat-lbl-sm">{s1_lbl}</span> {s1_val}</td>
           <td class="td-stat"><span class="stat-lbl-sm">{s2_lbl}</span> {s2_val}</td>
           <td class="td-stat"><span class="stat-lbl-sm">{s3_lbl}</span> {s3_val}</td>
@@ -762,9 +762,18 @@ footer a {{ color: var(--gold); text-decoration: none; }}
   .news-grid-wrap {{ grid-template-columns: 1fr; }}
   .about-box {{ padding: 18px 16px; }}
   table {{ font-size: 0.78rem; }}
-  td, thead th {{ padding: 8px 10px; }}
+  td, thead th {{ padding: 6px 8px; }}
   .row-photo {{ width: 28px; height: 28px; }}
   footer {{ padding: 18px 16px; }}
+  /* List view: hide less critical columns on mobile */
+  .td-org, .col-org {{ display: none; }}
+  .td-stat:nth-child(6), .td-stat:nth-child(7) {{ display: none; }}
+  thead th:nth-child(4) {{ display: none; }}
+  thead th:nth-child(6), thead th:nth-child(7) {{ display: none; }}
+  /* Wrap table in scrollable container */
+  .list-table-wrap {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
+  .td-name {{ white-space: normal; min-width: 120px; }}
+  .td-team {{ font-size: 0.75rem; }}
 }}
 </style>
 </head>
@@ -830,27 +839,27 @@ footer a {{ color: var(--gold); text-decoration: none; }}
   <div class="section-title">Latest News &amp; Updates</div>
   <div class="news-grid-wrap">
     <div class="news-card">
-      <div class="news-date">March 27, 2026</div>
-      <h4>2026 Season Underway — Noles Spread Across Pro Ball</h4>
-      <p>FSU alumni are active across all levels of professional baseball as the 2026 season gets rolling. Stats updated daily.</p>
+      <div class="news-date">April 2026</div>
+      <h4>Shane Drohan Called Up to Milwaukee Brewers</h4>
+      <p>Left-hander Shane Drohan earned his MLB debut with the Milwaukee Brewers this spring, fulfilling years of development through the minor league system. Follow his stats live on this site.</p>
+      <span class="news-tag">MLB Debut</span>
+    </div>
+    <div class="news-card">
+      <div class="news-date">April 2026</div>
+      <h4>Cal Raleigh Anchors Seattle Mariners Lineup</h4>
+      <p>Former Seminole catcher Cal Raleigh continues to be one of the most dangerous bats in the American League, leading Seattle's offense early in the 2026 season.</p>
+      <span class="news-tag">MLB</span>
+    </div>
+    <div class="news-card">
+      <div class="news-date">April 2026</div>
+      <h4>2026 Season Underway — 40 Noles in Pro Ball</h4>
+      <p>With 40 FSU alumni tracked across 24 organizations — including 8 on active MLB rosters — the Seminole pipeline is as deep as ever to start the 2026 campaign.</p>
       <span class="news-tag">Season Update</span>
     </div>
     <div class="news-card">
-      <div class="news-date">March 2026</div>
-      <h4>Cal Raleigh Opens Season with Seattle Mariners</h4>
-      <p>Former Seminole backstop Cal Raleigh is back behind the plate for Seattle as one of the top catchers in the American League.</p>
-      <span class="news-tag">MLB</span>
-    </div>
-    <div class="news-card">
-      <div class="news-date">March 2026</div>
-      <h4>Luke Weaver on the Mound for the New York Mets</h4>
-      <p>Right-hander Luke Weaver looks to build on a strong 2025 campaign as part of the Mets rotation heading into the new season.</p>
-      <span class="news-tag">MLB</span>
-    </div>
-    <div class="news-card">
-      <div class="news-date">Ongoing</div>
+      <div class="news-date">April 2026</div>
       <h4>Minor League Pipeline Loaded with FSU Talent</h4>
-      <p>From High-A to Triple-A, FSU alumni are climbing through organizations across the league.</p>
+      <p>From Single-A to Triple-A, former Seminoles are climbing through organizations across all 30 MLB clubs. Check the Roster tab to follow their journeys.</p>
       <span class="news-tag">Minor Leagues</span>
     </div>
   </div>
@@ -878,16 +887,18 @@ footer a {{ color: var(--gold); text-decoration: none; }}
     </div>
     <div class="list-wrap" id="listWrap">
       <div class="roster-card">
+        <div class="list-table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Player</th><th>Level</th><th>Team</th><th>Organization</th><th colspan="3">Key Stats</th>
+              <th>Player</th><th>Level</th><th>Team</th><th class="col-org">Organization</th><th>Stat 1</th><th>Stat 2</th><th>Stat 3</th>
             </tr>
           </thead>
           <tbody id="listBody">
 {rows_html}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   </div>
