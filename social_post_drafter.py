@@ -297,8 +297,8 @@ def build_drafts(player_data: list[dict], news_mentions: list[dict]) -> list[dic
         source = mention["source"]
 
         x = (
-            f"📰 {name} ({level} — {team}) is making news.\n\n"
-            f""{title}"\n\n"
+            f"📰 {name} ({level} - {team}) is making news.\n\n"
+            f'"{title}"\n\n'
             f"via {source} | Full stats: nolesintheshow.com\n\n"
             f"#FSU #Seminoles"
         )
