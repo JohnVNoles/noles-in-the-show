@@ -989,6 +989,7 @@ footer a {{ color: var(--gold); text-decoration: none; }}
 <footer>
   <p><strong style="color:white">Noles in the Show</strong> · Fan site, not affiliated with FSU or MLB.</p>
   <p style="margin-top:6px;">Data sourced from <a href="https://statsapi.mlb.com">MLB Stats API</a> · {SEASON} Season</p>
+  <p style="margin-top:6px;"><a href="privacy.html">Privacy Policy</a></p>
 </footer>
 
 <script>
