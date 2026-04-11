@@ -1085,11 +1085,27 @@ footer a {{ color: var(--gold); text-decoration: none; }}
         <li>
           <a href="https://seminoles.com/sports/baseball/" target="_blank" rel="noopener">
             <span class="link-icon" style="background:#782F40">
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="10" stroke="white" stroke-width="1.5"/>
-                <path d="M4.5 9.5c1.5 0 3 .5 4 1.5s2 1.5 3 1.5 2-.5 3-1.5 2.5-1.5 4-1.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-                <path d="M4.5 14.5c1.5 0 3-.5 4-1.5s2-1.5 3-1.5 2 .5 3 1.5 2.5 1.5 4 1.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-                <line x1="12" y1="2" x2="12" y2="22" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+              <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="46" fill="white" opacity="0.15"/>
+                <circle cx="50" cy="50" r="46" stroke="white" stroke-width="3"/>
+                <!-- Left seam arc -->
+                <path d="M 28 14 C 14 28, 10 42, 10 50 C 10 58, 14 72, 28 86" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                <!-- Right seam arc -->
+                <path d="M 72 14 C 86 28, 90 42, 90 50 C 90 58, 86 72, 72 86" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                <!-- Left seam stitches -->
+                <path d="M 22 26 L 30 22" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <path d="M 17 35 L 25 33" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <path d="M 14 44 L 22 44" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <path d="M 14 56 L 22 56" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <path d="M 17 65 L 25 67" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <path d="M 22 74 L 30 78" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <!-- Right seam stitches -->
+                <path d="M 78 26 L 70 22" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <path d="M 83 35 L 75 33" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <path d="M 86 44 L 78 44" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <path d="M 86 56 L 78 56" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <path d="M 83 65 L 75 67" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <path d="M 78 74 L 70 78" stroke="white" stroke-width="2" stroke-linecap="round"/>
               </svg>
             </span>
             <span><span class="link-lbl">FSU Baseball</span><span class="link-sub">seminoles.com — Official site</span></span>
