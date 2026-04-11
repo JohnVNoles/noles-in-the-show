@@ -331,8 +331,7 @@ def generate_news_cards(player_data: list[dict]) -> str:
                 "Promotion"
             ))
 
-    # ── 3. Pitching milestones ─────────────────────────────────────────────────
-    # Sort by ERA ascending so the best story leads
+    # ── 3. Pitching milestones — ONE card, best ERA leads ─────────────────────
     pitching_candidates = []
     for p in player_data:
         if not is_pitcher(p.get("position", "")):
@@ -343,38 +342,40 @@ def generate_news_cards(player_data: list[dict]) -> str:
             ip   = float(stats.get("IP",  "0").replace("—","0"))
             whip = float(stats.get("WHIP","99").replace("—","99"))
             ks   = int(stats.get("K", "0").replace("—","0"))
+            gs   = int(stats.get("GS", "0").replace("—","0"))
         except ValueError:
             continue
         if ip >= 5 and era <= 2.00:
-            pitching_candidates.append((era, ip, whip, ks, p))
+            pitching_candidates.append((era, ip, whip, ks, gs, p))
     pitching_candidates.sort(key=lambda x: x[0])  # best ERA first
 
-    for era, ip, whip, ks, p in pitching_candidates:
-        if len(cards) >= 4:
-            break
+    if pitching_candidates and len(cards) < 4:
+        era, ip, whip, ks, gs, p = pitching_candidates[0]
         name  = p["name"]
         level = p.get("level", "")
         team  = p.get("team", "")
         pos   = p.get("position", "")
         hand  = "Left-hander" if "LHP" in pos else "Right-hander"
+        role  = "starter" if gs >= 2 else "reliever"
 
-        # Vary headline based on ERA tier
         if era == 0.00:
-            headline = f"{name} Has Yet to Allow a Run"
-            closing  = f"The {hand.lower()} has been untouchable early, yet to allow an earned run through {ip:.1f} IP."
+            headline = f"{name} Hasn't Allowed an Earned Run All Season"
+            body = (f"The FSU alum has been unhittable out of the {team} bullpen, throwing {ip:.1f} scoreless "
+                    f"innings with {ks} strikeouts and a {whip:.2f} WHIP. "
+                    f"A 0.00 ERA is as clean as it gets.")
         elif era < 1.00:
-            headline = f"{name} Off to a Scorching Start with {team.split()[-1]}"
-            closing  = f"It's been a dominant stretch for the FSU alum, with a {era:.2f} ERA across {ip:.1f} frames."
+            headline = f"{name} Is Pitching to a {era:.2f} ERA for the {team.split()[-1]}"
+            body = (f"The {hand.lower()} {role} has been dominant early at {level}, holding opponents to a "
+                    f"{era:.2f} ERA across {ip:.1f} innings with {ks} strikeouts. "
+                    f"His {whip:.2f} WHIP tells the same story.")
         else:
-            headline = f"{name} Among the Stingiest Arms at {level}"
-            closing  = f"Through {ip:.1f} innings the {hand.lower()} sports a {era:.2f} ERA and {whip:.2f} WHIP."
-
-        body = (f"{hand} {name} has been one of the toughest outs at {level} for the {team} this season, "
-                f"striking out {ks} batters while allowing very little damage. {closing}")
+            headline = f"{name} Posting a {era:.2f} ERA Through {ip:.0f} Innings"
+            body = (f"{hand} {name} has been tough to score on at {level} for the {team}, "
+                    f"striking out {ks} hitters with a {whip:.2f} WHIP through {ip:.1f} innings. "
+                    f"One of the better early-season lines among Seminole pitchers.")
         cards.append(_news_card(date_str, headline, body, "Hot Start"))
 
-    # ── 4. Hitting milestones ──────────────────────────────────────────────────
-    # Score candidates so the most interesting story leads
+    # ── 4. Hitting milestones — ONE card per distinct angle ────────────────────
     hitting_candidates = []
     for p in player_data:
         if is_pitcher(p.get("position", "")):
@@ -387,49 +388,62 @@ def generate_news_cards(player_data: list[dict]) -> str:
             rbi = int(stats.get("RBI","0").replace("—","0"))
             ops = float(stats.get("OPS","0").replace("—","0") or "0")
             sb  = int(stats.get("SB", "0").replace("—","0"))
+            h   = int(stats.get("H", "0").replace("—","0"))
         except ValueError:
             continue
         high_avg = ab >= 10 and avg >= 0.340
         power    = hr >= 5
         if high_avg or power:
-            score = avg * 10 + hr * 0.5 + ops  # rough interestingness
-            hitting_candidates.append((score, avg, ab, hr, rbi, ops, sb, p))
-    hitting_candidates.sort(key=lambda x: -x[0])  # best first
+            score = avg * 10 + hr * 0.5 + ops
+            hitting_candidates.append((score, avg, ab, hr, rbi, ops, sb, h, p))
+    hitting_candidates.sort(key=lambda x: -x[0])
 
-    for score, avg, ab, hr, rbi, ops, sb, p in hitting_candidates:
+    used_angles = set()
+    for score, avg, ab, hr, rbi, ops, sb, h, p in hitting_candidates:
         if len(cards) >= 4:
             break
         name  = p["name"]
         level = p.get("level", "")
         team  = p.get("team", "")
-        pos   = p.get("position", "")
 
-        # Vary headline and angle based on what's notable
-        if hr >= 5 and avg >= 0.340:
-            # Both power and average — five-tool angle
-            headline = f"{name} Is Doing It All for {team.split()[-1]}"
-            body = (f"The former Seminole is putting up a complete line at {level} — hitting "
-                    f".{int(avg*1000):03d} with {hr} home runs and {rbi} RBI for the {team}. "
-                    f"An OPS of {ops:.3f} puts him among the best in the league.")
-        elif hr >= 5:
-            # Power story
-            headline = f"{name} Has Power to Spare at {level}"
-            body = (f"{name} is making a statement with his bat at {level}, launching {hr} home runs "
-                    f"for the {team} with a {ops:.3f} OPS on the season. "
-                    f"The FSU alum is turning heads in the {team.split()[-1]} system.")
-        elif sb >= 5 and avg >= 0.300:
-            # Speed + average angle
-            headline = f"{name} Hitting and Running for {team.split()[-1]}"
-            body = (f"The former Seminole outfielder is a nightmare for opposing pitchers at {level}, "
-                    f"batting .{int(avg*1000):03d} with {sb} stolen bases for the {team}. "
-                    f"Elite athleticism on full display.")
+        # Pick the most specific angle, skip if we've already run that angle
+        if hr >= 5 and avg >= 0.340 and "five_tool" not in used_angles:
+            angle = "five_tool"
+            headline = f"{name} Hitting .{int(avg*1000):03d} with {hr} Home Runs for {team.split()[-1]}"
+            body = (f"The former Seminole is doing everything right at {level} — elite contact and real power. "
+                    f"His {rbi} RBI and {ops:.3f} OPS rank him among the most productive hitters in the league.")
+        elif hr >= 5 and "power" not in used_angles:
+            angle = "power"
+            headline = f"{name} Already Has {hr} Home Runs at {level}"
+            body = (f"The power is not a question for the FSU alum. {name} is slugging for the {team} with "
+                    f"a {ops:.3f} OPS and {rbi} RBI. If the ball gets in the air, it's in trouble.")
+        elif sb >= 5 and avg >= 0.300 and "speed" not in used_angles:
+            angle = "speed"
+            headline = f"{name} Batting .{int(avg*1000):03d} with {sb} Steals at {level}"
+            body = (f"Speed and contact — the former Seminole is a handful at {level} for the {team}. "
+                    f"{name} has {h} hits and {sb} stolen bases, making things happen every time he reaches.")
+        elif "contact" not in used_angles:
+            angle = "contact"
+            # Highlight what's most eye-catching: the avg itself
+            avg_display = f".{int(avg*1000):03d}"
+            if avg >= 0.400:
+                headline = f"{name} Is Hitting {avg_display} — Yes, Really"
+                body = (f"The FSU alum is in a different stratosphere right now at {level}. "
+                        f"{name} is batting {avg_display} for the {team} through {ab} at-bats, "
+                        f"with {rbi} RBI and a {ops:.3f} OPS. Elite contact.")
+            elif level == "MLB":
+                headline = f"{name} Hitting {avg_display} to Open the MLB Season"
+                body = (f"Not many Seminoles make it to The Show — and {name} is making the most of it. "
+                        f"He's batting {avg_display} with {rbi} RBI for the {team}, posting a {ops:.3f} OPS through {ab} at-bats.")
+            else:
+                headline = f"{name} at .{int(avg*1000):03d} — Among the Best in {level}"
+                body = (f"The former Seminole is one of the more consistent bats at {level} this season. "
+                        f"{name} is hitting .{int(avg*1000):03d} with {rbi} RBI for the {team}, "
+                        f"a {ops:.3f} OPS through {ab} at-bats.")
         else:
-            # High average — pure contact story
-            headline = f"{name} Among the Hottest Hitters at {level}"
-            body = (f"Few hitters at {level} are making more consistent contact than {name}. "
-                    f"The FSU alum is batting .{int(avg*1000):03d} with {rbi} RBI for the {team}, "
-                    f"carrying a {ops:.3f} OPS through {ab} at-bats this season.")
+            continue  # already used all distinct angles
 
+        used_angles.add(angle)
         cards.append(_news_card(date_str, headline, body, "Hot Bat"))
 
     # ── 5. Fallback season summary (fills remaining slots) ─────────────────────
