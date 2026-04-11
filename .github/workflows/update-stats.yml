@@ -72,7 +72,7 @@ jobs:
           GMAIL_APP_PASS: ${{ secrets.GMAIL_APP_PASS }}
         run: |
           python3 - <<'PYEOF'
-          import json, smtplib, os
+          import json, smtplib, os, ssl
           from email.mime.multipart import MIMEMultipart
           from email.mime.text import MIMEText
           from datetime import datetime
@@ -153,14 +153,30 @@ jobs:
           msg["To"]      = gmail_addr
           msg.attach(MIMEText(html_body, "html"))
 
-          try:
-              with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-                  server.login(gmail_addr, gmail_pass)
-                  server.sendmail(gmail_addr, gmail_addr, msg.as_string())
-              print(f"Email sent to {gmail_addr}")
-          except Exception as e:
-              print(f"Email error: {e}")
-              exit(1)
+          # Try port 587 with STARTTLS first, fall back to 465 SSL
+          sent = False
+          for attempt, (port, use_ssl) in enumerate([(587, False), (465, True)]):
+              try:
+                  if use_ssl:
+                      ctx = ssl.create_default_context()
+                      with smtplib.SMTP_SSL("smtp.gmail.com", port, context=ctx) as server:
+                          server.login(gmail_addr, gmail_pass)
+                          server.sendmail(gmail_addr, gmail_addr, msg.as_string())
+                  else:
+                      with smtplib.SMTP("smtp.gmail.com", port, timeout=30) as server:
+                          server.ehlo()
+                          server.starttls(context=ssl.create_default_context())
+                          server.ehlo()
+                          server.login(gmail_addr, gmail_pass)
+                          server.sendmail(gmail_addr, gmail_addr, msg.as_string())
+                  print(f"Email sent to {gmail_addr} via port {port}")
+                  sent = True
+                  break
+              except Exception as e:
+                  print(f"Port {port} failed: {e}")
+          if not sent:
+              print("Could not send email — drafts saved to social_drafts.json in repo")
+              # Don't exit(1) — don't fail the whole workflow over email
           PYEOF
 
       - name: Commit social drafts log
