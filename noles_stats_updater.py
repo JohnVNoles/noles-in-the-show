@@ -786,7 +786,9 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
                  color: #444; text-decoration: none; font-size: 0.85rem;
                  transition: background .12s; }}
 .links-list a:hover {{ background: #fff5f6; color: var(--garnet); }}
-.links-list .link-icon {{ font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }}
+.links-list .link-icon {{ width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; }}
+.links-list .link-icon svg {{ width: 20px; height: 20px; }}
 .links-list .link-lbl {{ font-weight: 600; }}
 .links-list .link-sub {{ font-size: 0.72rem; color: #aaa; display: block; margin-top: 1px; }}
 
@@ -1078,36 +1080,29 @@ footer a {{ color: var(--gold); text-decoration: none; }}
 
     <!-- Links -->
     <div class="sidebar-widget">
-      <div class="sidebar-widget-hdr">🔗 FSU Baseball Links</div>
+      <div class="sidebar-widget-hdr">FSU Baseball Links</div>
       <ul class="links-list">
         <li>
-          <a href="https://fsuseminoles.com/sports/baseball" target="_blank">
-            <span class="link-icon">⚾</span>
-            <span><span class="link-lbl">FSU Baseball</span><span class="link-sub">Official Seminoles site</span></span>
+          <a href="https://seminoles.com/sports/baseball/" target="_blank" rel="noopener">
+            <span class="link-icon" style="background:#782F40">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="white" stroke-width="1.5"/>
+                <path d="M4.5 9.5c1.5 0 3 .5 4 1.5s2 1.5 3 1.5 2-.5 3-1.5 2.5-1.5 4-1.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M4.5 14.5c1.5 0 3-.5 4-1.5s2-1.5 3-1.5 2 .5 3 1.5 2.5 1.5 4 1.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="12" y1="2" x2="12" y2="22" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <span><span class="link-lbl">FSU Baseball</span><span class="link-sub">seminoles.com — Official site</span></span>
           </a>
         </li>
         <li>
-          <a href="https://twitter.com/FSUBaseball" target="_blank">
-            <span class="link-icon">𝕏</span>
-            <span><span class="link-lbl">@FSUBaseball</span><span class="link-sub">Official FSU Baseball Twitter</span></span>
-          </a>
-        </li>
-        <li>
-          <a href="https://www.baseball-reference.com/friv/colleges.fcgi?college=fsu" target="_blank">
-            <span class="link-icon">📊</span>
-            <span><span class="link-lbl">Baseball Reference</span><span class="link-sub">FSU alumni career stats</span></span>
-          </a>
-        </li>
-        <li>
-          <a href="https://www.mlb.com" target="_blank">
-            <span class="link-icon">🏟</span>
-            <span><span class="link-lbl">MLB.com</span><span class="link-sub">Major League Baseball</span></span>
-          </a>
-        </li>
-        <li>
-          <a href="https://garnetandgold.com" target="_blank">
-            <span class="link-icon">🛒</span>
-            <span><span class="link-lbl">Garnet &amp; Gold</span><span class="link-sub">Official FSU merchandise</span></span>
+          <a href="https://x.com/FSUBaseball" target="_blank" rel="noopener">
+            <span class="link-icon" style="background:#000">
+              <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>
+            </span>
+            <span><span class="link-lbl">@FSUBaseball</span><span class="link-sub">Official FSU Baseball on X</span></span>
           </a>
         </li>
       </ul>
