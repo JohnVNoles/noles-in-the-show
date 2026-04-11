@@ -116,9 +116,12 @@ def read_roster() -> list[dict]:
         milb_url    = row[10] if len(row) > 10 else None
         if name:
             draft_str = ""
-            if draft_year and draft_round:
-                pick_str = f" (Pick #{int(draft_pick)})" if draft_pick else ""
-                draft_str = f"{int(draft_year)} · Rd {int(draft_round)}{pick_str}"
+            try:
+                if draft_year and draft_round and str(draft_year).strip('—'):
+                    pick_str = f" (Pick #{int(float(draft_pick))})" if draft_pick and str(draft_pick).strip('—').strip() else ""
+                    draft_str = f"{int(float(draft_year))} · Rd {int(float(draft_round))}{pick_str}"
+            except (ValueError, TypeError):
+                draft_str = ""
             players.append({
                 "name": name, "position": pos or "",
                 "org": org or "", "level": level or "",
