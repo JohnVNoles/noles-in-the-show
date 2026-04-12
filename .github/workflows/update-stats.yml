@@ -62,122 +62,23 @@ jobs:
 
       - name: Run social post drafter
         run: python social_post_drafter.py
-        env:
-          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
-          GMAIL_APP_PASS: ${{ secrets.GMAIL_APP_PASS }}
+
+      - name: Set today date
+        run: echo "TODAY=$(date +'%B %d, %Y')" >> $GITHUB_ENV
 
       - name: Email daily post drafts
-        env:
-          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
-          GMAIL_APP_PASS: ${{ secrets.GMAIL_APP_PASS }}
-        run: |
-          python3 - <<'PYEOF'
-          import json, smtplib, os, ssl
-          from email.mime.multipart import MIMEMultipart
-          from email.mime.text import MIMEText
-          from datetime import datetime
-          from pathlib import Path
-
-          gmail_addr = os.environ.get("GMAIL_ADDRESS", "")
-          gmail_pass = os.environ.get("GMAIL_APP_PASS", "")
-
-          if not gmail_addr or not gmail_pass:
-              print("Gmail credentials not set — skipping email")
-              exit(0)
-
-          drafts_path = Path("social_drafts.json")
-          if not drafts_path.exists():
-              print("No drafts file found")
-              exit(0)
-
-          history = json.loads(drafts_path.read_text())
-          today = datetime.now().strftime("%Y-%m-%d")
-          todays = next((h for h in reversed(history) if h.get("date") == today), None)
-
-          if not todays or not todays.get("drafts"):
-              print("No drafts for today")
-              exit(0)
-
-          drafts = todays["drafts"]
-          date_str = datetime.now().strftime("%A, %B %d, %Y")
-
-          html_parts = [f"""
-          <html><body style="font-family:Arial,sans-serif;max-width:700px;margin:0 auto;padding:20px;background:#f5f5f5">
-          <div style="background:#782F40;padding:20px;border-radius:8px 8px 0 0;text-align:center">
-            <h1 style="color:#CEB888;margin:0;font-size:1.4rem">&#9918; Noles in the Show</h1>
-            <p style="color:rgba(255,255,255,0.8);margin:6px 0 0;font-size:0.9rem">Daily Post Drafts &mdash; {date_str}</p>
-          </div>
-          <div style="background:white;padding:24px;border-radius:0 0 8px 8px;border:1px solid #ddd">
-            <p style="color:#555;font-size:0.9rem;margin-top:0">
-              {len(drafts)} draft(s) ready for review. Copy each into X and Instagram &mdash; edit as needed before posting.
-            </p>
-          """]
-
-          for i, d in enumerate(drafts, 1):
-              ptype   = d.get("type","").replace("_"," ").title()
-              player  = d.get("player","")
-              source  = d.get("source","")
-              x_post  = d.get("x_post","")
-              ig_cap  = d.get("ig_caption","")
-              article = d.get("article_link","")
-
-              html_parts.append(f"""
-              <div style="border:1px solid #e0e0e0;border-radius:8px;padding:16px;margin-bottom:20px">
-                <div style="background:#782F40;color:white;padding:8px 12px;border-radius:4px;margin-bottom:12px">
-                  <strong>#{i} &mdash; {ptype}</strong> &middot; {player}
-                </div>
-                <p style="font-size:0.78rem;color:#888;margin:0 0 12px">Source: {source}</p>
-                <p style="font-weight:bold;color:#1da1f2;margin:0 0 4px">X Post ({len(x_post)} chars)</p>
-                <div style="background:#f8f9fa;border-left:3px solid #1da1f2;padding:12px;border-radius:4px;white-space:pre-wrap;font-size:0.88rem;margin-bottom:16px">{x_post}</div>
-                <p style="font-weight:bold;color:#e1306c;margin:0 0 4px">Instagram Caption</p>
-                <div style="background:#f8f9fa;border-left:3px solid #e1306c;padding:12px;border-radius:4px;white-space:pre-wrap;font-size:0.88rem">{ig_cap}</div>
-                {"<p style='margin-top:10px'><a href='" + article + "'>Read article</a></p>" if article else ""}
-              </div>
-              """)
-
-          html_parts.append("""
-            <div style="text-align:center;padding-top:12px;border-top:1px solid #eee;margin-top:8px">
-              <a href="https://nolesintheshow.com" style="color:#782F40;font-weight:bold">nolesintheshow.com</a>
-              &nbsp;&middot;&nbsp;
-              <a href="https://x.com/NolesInTheShow" style="color:#1da1f2">@NolesInTheShow</a>
-              &nbsp;&middot;&nbsp;
-              <a href="https://www.instagram.com/nolesintheshow/" style="color:#e1306c">@nolesintheshow</a>
-            </div>
-          </div></body></html>
-          """)
-
-          html_body = "".join(html_parts)
-          msg = MIMEMultipart("alternative")
-          msg["Subject"] = f"Noles in the Show - Daily Post Drafts ({date_str})"
-          msg["From"]    = gmail_addr
-          msg["To"]      = gmail_addr
-          msg.attach(MIMEText(html_body, "html"))
-
-          # Try port 587 with STARTTLS first, fall back to 465 SSL
-          sent = False
-          for attempt, (port, use_ssl) in enumerate([(587, False), (465, True)]):
-              try:
-                  if use_ssl:
-                      ctx = ssl.create_default_context()
-                      with smtplib.SMTP_SSL("smtp.gmail.com", port, context=ctx) as server:
-                          server.login(gmail_addr, gmail_pass)
-                          server.sendmail(gmail_addr, gmail_addr, msg.as_string())
-                  else:
-                      with smtplib.SMTP("smtp.gmail.com", port, timeout=30) as server:
-                          server.ehlo()
-                          server.starttls(context=ssl.create_default_context())
-                          server.ehlo()
-                          server.login(gmail_addr, gmail_pass)
-                          server.sendmail(gmail_addr, gmail_addr, msg.as_string())
-                  print(f"Email sent to {gmail_addr} via port {port}")
-                  sent = True
-                  break
-              except Exception as e:
-                  print(f"Port {port} failed: {e}")
-          if not sent:
-              print("Could not send email — drafts saved to social_drafts.json in repo")
-              # Don't exit(1) — don't fail the whole workflow over email
-          PYEOF
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.GMAIL_ADDRESS }}
+          password: ${{ secrets.GMAIL_APP_PASS }}
+          subject: "Noles in the Show - Daily Post Drafts (${{ env.TODAY }})"
+          to: nolesintheshow@gmail.com
+          from: Noles in the Show <${{ secrets.GMAIL_ADDRESS }}>
+          html_body: file://email_body.html
+        continue-on-error: true
 
       - name: Commit social drafts log
         run: |

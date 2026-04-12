@@ -3,8 +3,8 @@ Noles in the Show — Social Post Drafter
 ========================================
 Runs after noles_stats_updater.py each day. Uses the same player_data
 pipeline to draft ready-to-post content for X (@NolesInTheShow) and
-Instagram (@nolesintheshow), then sends a Teams message card with
-the drafts to the NolesInTheShow channel via incoming webhook.
+Instagram (@nolesintheshow), then writes a styled HTML email body to
+email_body.html for delivery via GitHub Actions (dawidd6/action-send-mail).
 
 Sources checked (in order):
   1. MLB Stats API data (already fetched by the updater — reused here)
@@ -14,9 +14,6 @@ Sources checked (in order):
 
 Usage (standalone):
   python social_post_drafter.py
-
-Env vars required:
-  TEAMS_WEBHOOK_URL  — incoming webhook URL for the NolesInTheShow Teams channel
 
 Optional env vars:
   SKIP_NEWS_SCRAPE=1 — skip RSS scraping (faster, stats-only mode)
@@ -49,6 +46,7 @@ FSU_HASHTAGS    = "#FSU #Seminoles #NolesInTheShow #FSUBaseball"
 IG_HASHTAGS     = "#FSU #Seminoles #NolesInTheShow #FSUBaseball #MiLB #MLB #ProBall #BaseballTwitter #GoNoles"
 
 TEAMS_WEBHOOK   = os.environ.get("TEAMS_WEBHOOK_URL", "")
+EMAIL_BODY_PATH = BASE_DIR / "email_body.html"
 
 # RSS/news feeds that cover minor and major league baseball
 NEWS_FEEDS = [
@@ -518,6 +516,71 @@ def build_drafts(player_data: list[dict], news_mentions: list[dict]) -> list[dic
     drafts.sort(key=lambda d: d["priority"])
     return drafts[:3]
 
+# ── Email body writer ────────────────────────────────────────────────────────
+def write_email_body(drafts: list[dict]) -> bool:
+    """Write a styled HTML email body to email_body.html for GitHub Actions to send."""
+    date_str = datetime.now().strftime("%A, %B %d, %Y")
+
+    draft_blocks = []
+    for i, d in enumerate(drafts, 1):
+        ptype   = d.get("type", "").replace("_", " ").title()
+        player  = d.get("player", "")
+        source  = d.get("source", "")
+        x_post  = d.get("x_post", "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        ig_cap  = d.get("ig_caption", "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        article = d.get("article_link", "")
+
+        article_html = f'<p style="margin-top:10px"><a href="{article}" style="color:#782F40">Read article</a></p>' if article else ""
+
+        draft_blocks.append(f"""
+        <div style="border:1px solid #e0e0e0;border-radius:8px;padding:16px;margin-bottom:20px">
+          <div style="background:#782F40;color:white;padding:8px 12px;border-radius:4px;margin-bottom:12px">
+            <strong>#{i} &mdash; {ptype}</strong> &middot; {player}
+          </div>
+          <p style="font-size:0.78rem;color:#888;margin:0 0 12px">Source: {source}</p>
+
+          <p style="font-weight:bold;color:#1da1f2;margin:0 0 4px">X Post ({len(d.get("x_post",""))} chars)</p>
+          <div style="background:#f8f9fa;border-left:3px solid #1da1f2;padding:12px;border-radius:4px;white-space:pre-wrap;font-size:0.88rem;margin-bottom:16px">{x_post}</div>
+
+          <p style="font-weight:bold;color:#e1306c;margin:0 0 4px">Instagram Caption</p>
+          <div style="background:#f8f9fa;border-left:3px solid #e1306c;padding:12px;border-radius:4px;white-space:pre-wrap;font-size:0.88rem">{ig_cap}</div>
+          {article_html}
+        </div>
+        """)
+
+    html = f"""<!DOCTYPE html>
+<html>
+<body style="font-family:Arial,sans-serif;max-width:700px;margin:0 auto;padding:20px;background:#f5f5f5">
+  <div style="background:#782F40;padding:20px;border-radius:8px 8px 0 0;text-align:center">
+    <h1 style="color:#CEB888;margin:0;font-size:1.4rem">&#9918; Noles in the Show</h1>
+    <p style="color:rgba(255,255,255,0.8);margin:6px 0 0;font-size:0.9rem">Daily Post Drafts &mdash; {date_str}</p>
+  </div>
+  <div style="background:white;padding:24px;border-radius:0 0 8px 8px;border:1px solid #ddd">
+    <p style="color:#555;font-size:0.9rem;margin-top:0">
+      {len(drafts)} draft(s) ready for review. Copy each into X and Instagram &mdash; edit as needed before posting.
+    </p>
+    {"".join(draft_blocks)}
+    <div style="text-align:center;padding-top:12px;border-top:1px solid #eee;margin-top:8px">
+      <a href="https://nolesintheshow.com" style="color:#782F40;font-weight:bold">nolesintheshow.com</a>
+      &nbsp;&middot;&nbsp;
+      <a href="https://x.com/NolesInTheShow" style="color:#1da1f2">@NolesInTheShow</a>
+      &nbsp;&middot;&nbsp;
+      <a href="https://www.instagram.com/nolesintheshow/" style="color:#e1306c">@nolesintheshow</a>
+    </div>
+  </div>
+</body>
+</html>"""
+
+    try:
+        with open(EMAIL_BODY_PATH, "w") as f:
+            f.write(html)
+        print(f"  ✓ Email body written to {EMAIL_BODY_PATH.name}")
+        return True
+    except Exception as e:
+        print(f"  ! Failed to write email body: {e}")
+        return False
+
+
 # ── Teams message ─────────────────────────────────────────────────────────────
 def send_to_teams(drafts: list[dict]) -> bool:
     """Send a rich adaptive card to Teams with all today's drafts."""
@@ -656,7 +719,10 @@ def main():
     print("→ Logging drafts to social_drafts.json...")
     log_drafts(drafts)
 
-    print("→ Sending to Teams...")
+    print("→ Writing HTML email body...")
+    write_email_body(drafts)
+
+    print("→ Sending to Teams (if webhook configured)...")
     send_to_teams(drafts)
 
     print(f"\n{'='*55}")
