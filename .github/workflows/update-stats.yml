@@ -26,13 +26,7 @@ jobs:
 
       - name: Rebrand to Noles in the Show
         run: |
-          python3 -c "
-import sys
-with open('noles_dashboard.html', 'r', encoding='utf-8') as f: html = f.read()
-html = html.replace('Noles in the Pros', 'Noles in the Show').replace('NolesInThePros', 'NolesInTheShow')
-with open('noles_dashboard.html', 'w', encoding='utf-8') as f: f.write(html)
-print('Rebranded OK')
-"
+          python3 -c 'import re; f=open("noles_dashboard.html","r",encoding="utf-8"); html=f.read(); f.close(); html=html.replace("Noles in the Pros","Noles in the Show").replace("NolesInThePros","NolesInTheShow"); f=open("noles_dashboard.html","w",encoding="utf-8"); f.write(html); f.close()'
 
       - name: Inject last-updated indicator
         run: |
