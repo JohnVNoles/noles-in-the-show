@@ -303,6 +303,21 @@ def generate_news_cards(player_data: list[dict]) -> str:
     total        = len(player_data)
     orgs         = len(set(p["org"] for p in player_data if p.get("org")))
 
+    # ── 0. Pinned call-up cards (manually confirmed, always shown) ────────────
+    pinned = [
+        _news_card(
+            "April 2026",
+            "Jack Anderson Called Up to the Boston Red Sox",
+            "The former FSU right-hander has earned his spot in The Show. "
+            "Anderson was called up by Boston in April 2026 after working through "
+            "the Red Sox minor league system. The pipeline delivers.",
+            "Call-Up"
+        ),
+    ]
+    for pc in pinned:
+        if len(cards) < 4:
+            cards.append(pc)
+
     # ── 1. MLB debuts ──────────────────────────────────────────────────────────
     for p in player_data:
         if len(cards) >= 4:
@@ -462,23 +477,9 @@ def generate_news_cards(player_data: list[dict]) -> str:
     fallback_cards = [
         _news_card(
             date_str,
-            f"{SEASON} Season Underway — {total} Noles in Pro Ball",
-            f"With {total} FSU alumni tracked across {orgs} organizations — including "
-            f"{mlb_count} on active MLB rosters — the Seminole pipeline is as strong as ever. "
-            f"Stats update daily throughout the season.",
-            "Season Update"
-        ),
-        _news_card(
-            date_str,
-            "Minor League Pipeline Loaded with FSU Talent",
-            f"From Single-A to Triple-A, former Seminoles are climbing through organizations "
-            f"across the league. Check the roster below for current stats at every level.",
-            "Minor Leagues"
-        ),
-        _news_card(
-            date_str,
             "Stats Updating Daily",
             "Noles in the Show pulls live data from the MLB Stats API every morning. "
+            "Roster news is updated manually as it happens. "
             "Bookmark this page and check back throughout the season for the latest numbers.",
             "Site Update"
         ),
