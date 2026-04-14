@@ -303,7 +303,7 @@ def generate_news_cards(player_data: list[dict]) -> str:
     total        = len(player_data)
     orgs         = len(set(p["org"] for p in player_data if p.get("org")))
 
-    # ── 0. Pinned call-up cards (manually confirmed, always shown) ────────────
+    # ── 0. Pinned call-up cards (manually confirmed, always first) ───────────
     pinned = [
         _news_card(
             "April 2026",
@@ -314,13 +314,12 @@ def generate_news_cards(player_data: list[dict]) -> str:
             "Call-Up"
         ),
     ]
-    for pc in pinned:
-        if len(cards) < 4:
-            cards.append(pc)
+    cards.extend(pinned)  # always inserted, regardless of count
+    MAX_CARDS = 4 + len(pinned)  # allow room for pinned + 4 auto cards
 
     # ── 1. MLB debuts ──────────────────────────────────────────────────────────
     for p in player_data:
-        if len(cards) >= 4:
+        if len(cards) >= MAX_CARDS:
             break
         name  = p["name"]
         level = p.get("level", "")
@@ -339,7 +338,7 @@ def generate_news_cards(player_data: list[dict]) -> str:
 
     # ── 2. Promotions (non-MLB) ────────────────────────────────────────────────
     for p in player_data:
-        if len(cards) >= 4:
+        if len(cards) >= MAX_CARDS:
             break
         name  = p["name"]
         level = p.get("level", "")
@@ -376,7 +375,7 @@ def generate_news_cards(player_data: list[dict]) -> str:
             pitching_candidates.append((era, ip, whip, ks, gs, p))
     pitching_candidates.sort(key=lambda x: x[0])  # best ERA first
 
-    if pitching_candidates and len(cards) < 4:
+    if pitching_candidates and len(cards) < MAX_CARDS:
         era, ip, whip, ks, gs, p = pitching_candidates[0]
         name  = p["name"]
         level = p.get("level", "")
@@ -427,7 +426,7 @@ def generate_news_cards(player_data: list[dict]) -> str:
 
     used_angles = set()
     for score, avg, ab, hr, rbi, ops, sb, h, p in hitting_candidates:
-        if len(cards) >= 4:
+        if len(cards) >= MAX_CARDS:
             break
         name  = p["name"]
         level = p.get("level", "")
@@ -485,7 +484,7 @@ def generate_news_cards(player_data: list[dict]) -> str:
         ),
     ]
     for fb in fallback_cards:
-        if len(cards) >= 4:
+        if len(cards) >= MAX_CARDS:
             break
         cards.append(fb)
 
@@ -500,7 +499,7 @@ def generate_news_cards(player_data: list[dict]) -> str:
             news_cache[name] = entry
     save_news_cache(news_cache)
 
-    return "\n    ".join(cards[:4])
+    return "\n    ".join(cards[:MAX_CARDS])
 
 
 # ── Generate HTML Dashboard ───────────────────────────────────────────────────
