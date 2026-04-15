@@ -1069,14 +1069,11 @@ footer a {{ color: var(--gold); text-decoration: none; }}
         <span>𝕏 @NolesInTheShow</span>
         <a href="https://twitter.com/NolesInTheShow" target="_blank">Follow</a>
       </div>
-      <a class="twitter-timeline"
-         data-width="280"
-         data-height="400"
-         data-theme="light"
-         data-chrome="noheader nofooter noborders transparent"
-         href="https://twitter.com/NolesInTheShow">
-        Tweets by @NolesInTheShow
-      </a>
+      <div style="padding:8px;">
+        <blockquote class="twitter-tweet" data-conversation="none">
+          <a href="https://twitter.com/NolesInTheShow/status/2043070648025788749"></a>
+        </blockquote>
+      </div>
     </div>
 
     <!-- Links -->
