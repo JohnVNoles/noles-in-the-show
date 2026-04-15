@@ -1069,10 +1069,22 @@ footer a {{ color: var(--gold); text-decoration: none; }}
         <span>𝕏 @NolesInTheShow</span>
         <a href="https://twitter.com/NolesInTheShow" target="_blank">Follow</a>
       </div>
-      <div style="padding:8px;">
-        <blockquote class="twitter-tweet" data-conversation="none">
-          <a href="https://twitter.com/NolesInTheShow/status/2043070648025788749"></a>
-        </blockquote>
+      <div style="padding:12px 14px;">
+        <div style="font-size:0.82rem;color:#555;line-height:1.5;margin-bottom:10px;">
+          Early in the season, but Jaxson West is off to a hot start!
+        </div>
+        <div style="font-size:0.75rem;color:#999;margin-bottom:12px;">Apr 11 · @NolesInTheShow</div>
+        <a href="https://twitter.com/NolesInTheShow/status/2043070648025788749"
+           target="_blank" rel="noopener"
+           style="display:inline-block;font-size:0.75rem;background:var(--garnet);color:white;padding:5px 12px;border-radius:20px;text-decoration:none;font-weight:600;">
+          View on 𝕏
+        </a>
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
+          <a href="https://twitter.com/NolesInTheShow" target="_blank" rel="noopener"
+             style="display:block;text-align:center;font-size:0.8rem;font-weight:700;color:var(--garnet);text-decoration:none;">
+            Follow @NolesInTheShow →
+          </a>
+        </div>
       </div>
     </div>
 
