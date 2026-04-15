@@ -1070,9 +1070,10 @@ footer a {{ color: var(--gold); text-decoration: none; }}
         <a href="https://twitter.com/NolesInTheShow" target="_blank">Follow</a>
       </div>
       <a class="twitter-timeline"
-         data-height="380"
+         data-width="280"
+         data-height="400"
          data-theme="light"
-         data-chrome="noheader nofooter noborders"
+         data-chrome="noheader nofooter noborders transparent"
          href="https://twitter.com/NolesInTheShow">
         Tweets by @NolesInTheShow
       </a>
