@@ -35,7 +35,13 @@ LEVEL_SPORT_ID = {
     "Low-A":       14,
     "Rookie":      15,
     "Independent": None,
+    "60-Day IL":   None,
+    "7-Day IL":    None,
+    "Released":    None,
 }
+
+# Levels that skip API stat lookups entirely
+NO_STATS_LEVELS = {"Released", "60-Day IL", "7-Day IL", "Independent"}
 
 HEADERS = {"User-Agent": "NolesInTheShow/1.0"}
 
@@ -506,9 +512,12 @@ def generate_news_cards(player_data: list[dict]) -> str:
 def generate_html(player_data: list[dict], news_html: str = ""):
     updated = datetime.now().strftime("%B %d, %Y at %I:%M %p")
 
-    levels_order = ["MLB", "AAA", "AA", "High-A", "Low-A", "Rookie", "Independent"]
+    levels_order = ["MLB", "AAA", "AA", "High-A", "Low-A", "Rookie", "Independent", "60-Day IL", "7-Day IL"]
     level_rank = {l: i for i, l in enumerate(levels_order)}
-    sorted_players = sorted(player_data, key=lambda p: level_rank.get(p["level"], 99))
+    # Separate active players from released
+    active_players  = [p for p in player_data if p["level"] != "Released"]
+    released_players = [p for p in player_data if p["level"] == "Released"]
+    sorted_players = sorted(active_players, key=lambda p: level_rank.get(p["level"], 99))
 
     level_colors = {
         "MLB":         "#782F40",  # FSU Garnet
@@ -518,13 +527,16 @@ def generate_html(player_data: list[dict], news_html: str = ""):
         "Low-A":       "#2C5F8A",  # Steel blue
         "Rookie":      "#6B4C93",  # Purple
         "Independent": "#5a5a5a",  # Neutral gray
+        "60-Day IL":   "#8B4513",  # Brown/rust
+        "7-Day IL":    "#8B4513",  # Brown/rust
+        "Released":    "#999999",  # Light gray
     }
     light_levels = {"AA"}  # light backgrounds need dark text
 
     # ── Dynamic hero stats ────────────────────────────────────────────────────
-    total_players = len(player_data)
-    mlb_count     = sum(1 for p in player_data if p.get("level") == "MLB")
-    org_count     = len(set(p["org"] for p in player_data if p.get("org")))
+    total_players = len(active_players)
+    mlb_count     = sum(1 for p in active_players if p.get("level") == "MLB")
+    org_count     = len(set(p["org"] for p in active_players if p.get("org") and p.get("org") != "—"))
 
     # ── Photo URL helper ──────────────────────────────────────────────────────
     def photo_url(p):
@@ -596,17 +608,22 @@ def generate_html(player_data: list[dict], news_html: str = ""):
             "milbUrl":   p.get("milb_url", ""),
         })
 
+        il_badge = (f'<span style="display:inline-block;background:#8B4513;color:white;'
+                    f'font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:10px;'
+                    f'margin-left:6px;vertical-align:middle;">{lvl}</span>'
+                    if lvl in ("60-Day IL", "7-Day IL") else "")
+
         return f'''
         <div class="card" data-level="{lvl}" data-name="{p["name"].lower()}" onclick="openModal({idx})" style="cursor:pointer">
           <div class="card-header" style="background:{color};color:{txt}">
             {photo_tag}
             <div class="card-info">
-              <div class="card-name">{p["name"]}</div>
+              <div class="card-name">{p["name"]}{il_badge}</div>
               <div class="card-meta">{p["position"]} · {p["team"]}</div>
               {org_line}
             </div>
           </div>
-          <div class="card-level" style="color:{color}">{lvl}</div>
+          <div class="card-level" style="color:{color}">{lvl if lvl not in ("60-Day IL","7-Day IL") else p.get("pre_il_level","—")}</div>
           <div class="card-stats">{stats_html}{no_data_msg}</div>
         </div>'''
 
@@ -643,6 +660,28 @@ def generate_html(player_data: list[dict], news_html: str = ""):
         </tr>'''
 
     rows_html = "\n".join(table_row(p) for p in sorted_players)
+
+    # ── Released players section ───────────────────────────────────────────────
+    def released_card(p):
+        return (
+            '<div class="released-card">'
+            f'<div class="released-name">{p["name"]}</div>'
+            f'<div class="released-pos">{p["position"]}</div>'
+            '<div class="released-status">Released</div>'
+            f'<div class="released-note">{p.get("draft","")}</div>'
+            '</div>'
+        )
+
+    released_html = ""
+    if released_players:
+        released_cards = "\n".join(released_card(p) for p in released_players)
+        released_html = (
+            '<div class="section-wrap" id="released" style="margin-top:0;padding-top:0;">'
+            '<div class="section-title" style="color:#999;font-size:1rem;">No Longer Active</div>'
+            '<div class="released-grid">' +
+            released_cards +
+            '</div></div>'
+        )
 
     # ── Level filter buttons (color-coordinated) ──────────────────────────────
     level_btns = ('<button class="filter-btn active" data-color="#782F40" '
@@ -815,6 +854,17 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
             font-size: 0.78rem; padding: 8px 0; font-style: italic; }}
 .season-note {{ text-align: center; font-size: 0.68rem; color: #aaa;
                 font-style: italic; padding: 2px 0 6px; }}
+
+/* ── Released / No Longer Active section ── */
+.released-grid {{ display: flex; flex-wrap: wrap; gap: 12px; padding: 4px 0 16px; }}
+.released-card {{ background: white; border: 1px solid #ddd; border-radius: 8px;
+                  padding: 12px 16px; display: flex; align-items: center; gap: 14px;
+                  min-width: 220px; }}
+.released-name  {{ font-weight: 600; font-size: 0.9rem; color: #555; flex: 1; }}
+.released-pos   {{ font-size: 0.78rem; color: #aaa; }}
+.released-status {{ background: #999; color: white; font-size: 0.65rem; font-weight: 700;
+                    padding: 2px 8px; border-radius: 10px; white-space: nowrap; }}
+.released-note  {{ font-size: 0.72rem; color: #bbb; margin-left: 4px; }}
 
 /* ── List/Table view ── */
 .list-wrap {{ display: none; }}
@@ -1044,6 +1094,7 @@ footer a {{ color: var(--gold); text-decoration: none; }}
     <div class="grid" id="grid">
 {cards_html}
     </div>
+    {released_html}
     <div class="list-wrap" id="listWrap">
       <div class="roster-card">
         <table>
@@ -1300,6 +1351,11 @@ def main():
     print("→ Looking up player IDs and fetching stats...\n")
     for p in roster:
         name = p["name"]
+        level = p.get("level", "")
+        if level in NO_STATS_LEVELS:
+            print(f"  \u2022 {name} \u2026 skipped ({level})")
+            player_data.append({**p, "stats_fmt": {}, "mlb_id": None})
+            continue
         milb_url = p.get("milb_url", "")
 
         # Extract player ID directly from MiLB URL if available (more reliable than name search)
