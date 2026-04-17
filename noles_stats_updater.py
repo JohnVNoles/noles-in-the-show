@@ -120,6 +120,7 @@ def read_roster() -> list[dict]:
         draft_pick  = row[7] if len(row) > 7 else None
         milb_url    = row[9] if len(row) > 9 else None
         notes       = row[10] if len(row) > 10 else None
+        base_level  = row[11] if len(row) > 11 else None
         if name:
             draft_str = ""
             try:
@@ -132,7 +133,8 @@ def read_roster() -> list[dict]:
                 "name": name, "position": pos or "",
                 "org": org or "", "level": level or "",
                 "team": team or "", "milb_url": milb_url or "",
-                "draft": draft_str, "notes": str(notes).strip() if notes else ""
+                "draft": draft_str, "notes": str(notes).strip() if notes else "",
+                "base_level": str(base_level).strip() if base_level else ""
             })
     return players
 
@@ -635,11 +637,13 @@ def generate_html(player_data: list[dict], news_html: str = ""):
 
     # ── List/table view ───────────────────────────────────────────────────────
     def table_row(p):
-        lvl   = p["level"]
-        color = level_colors.get(lvl, "#555")
-        txt   = "#333" if lvl in light_levels else "white"
-        stats = p.get("stats_fmt", {})
-        pitcher = is_pitcher(p["position"])
+        lvl        = p["level"]
+        base_lvl   = p.get("base_level", "") or lvl
+        badge_lvl  = base_lvl if lvl in ("60-Day IL", "7-Day IL") else lvl
+        color      = level_colors.get(badge_lvl, "#555")
+        txt        = "#333" if badge_lvl in light_levels else "white"
+        stats      = p.get("stats_fmt", {})
+        pitcher    = is_pitcher(p["position"])
         if pitcher:
             s1_lbl, s1_val = "ERA",  stats.get("ERA", "—")
             s2_lbl, s2_val = "IP",   stats.get("IP",  "—")
@@ -649,13 +653,18 @@ def generate_html(player_data: list[dict], news_html: str = ""):
             s2_lbl, s2_val = "HR",   stats.get("HR",  "—")
             s3_lbl, s3_val = "OPS",  stats.get("OPS", "—")
         org_cell = p.get("org", "") if lvl != "MLB" else "—"
+        il_tag = (f'<span style="display:inline-block;background:#8B4513;color:white;'
+                  f'font-size:0.6rem;font-weight:700;padding:1px 6px;border-radius:8px;'
+                  f'margin-left:5px;vertical-align:middle;">{lvl}</span>'
+                  if lvl in ("60-Day IL", "7-Day IL") else "")
+        name_link = f'<a href="{p["milb_url"]}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">{p["name"]}</a>' if p.get("milb_url") else p["name"]
         return f'''
         <tr data-level="{lvl}" data-name="{p["name"].lower()}">
           <td class="td-name">
             <img class="row-photo" src="{photo_url(p)}" alt="{p["name"]}" onerror="{PHOTO_ONERROR}">
-            <span class="name-text">{f'<a href="{p["milb_url"]}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">{p["name"]}</a>' if p.get("milb_url") else p["name"]} <span class="pos-tag">{p["position"]}</span></span>
+            <span class="name-text">{name_link}{il_tag} <span class="pos-tag">{p["position"]}</span></span>
           </td>
-          <td><span class="lvl-badge" style="background:{color};color:{txt}">{lvl}</span></td>
+          <td><span class="lvl-badge" style="background:{color};color:{txt}">{badge_lvl}</span></td>
           <td class="td-team">{p["team"]}</td>
           <td class="td-org">{org_cell}</td>
           <td class="td-stat"><span class="stat-lbl-sm">{s1_lbl}</span> {s1_val}</td>
