@@ -675,13 +675,13 @@ def generate_html(player_data: list[dict], news_html: str = ""):
     released_html = ""
     if released_players:
         released_cards = "\n".join(released_card(p) for p in released_players)
-        released_html = (
-            '<div class="section-wrap" id="released" style="margin-top:0;padding-top:0;">'
-            '<div class="section-title" style="color:#999;font-size:1rem;">No Longer Active</div>'
-            '<div class="released-grid">' +
-            released_cards +
-            '</div></div>'
-        )
+        released_html = f'''
+<div class="section-wrap" id="released" style="margin-top:0;padding-top:0;">
+  <div class="section-title" style="color:#999;font-size:1rem;">No Longer Active</div>
+  <div class="released-grid">
+    {released_cards}
+  </div>
+</div>'''
 
     # ── Level filter buttons (color-coordinated) ──────────────────────────────
     level_btns = ('<button class="filter-btn active" data-color="#782F40" '
