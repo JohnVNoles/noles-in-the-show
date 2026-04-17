@@ -538,20 +538,23 @@ def generate_html(player_data: list[dict], news_html: str = ""):
     mlb_count     = sum(1 for p in active_players if p.get("level") == "MLB")
     org_count     = len(set(p["org"] for p in active_players if p.get("org") and p.get("org") != "—"))
 
-    # ── Photo URL helper ──────────────────────────────────────────────────────
+    # ── Photo URL helper ────────────────────────────────────────────
     def photo_url(p):
         mid = p.get("mlb_id")
         if not mid:
             return ""
         base = "https://img.mlbstatic.com/mlb-photos/image/upload"
-        return (f"{base}/d_people:generic:headshot:67:current.png,"
-                f"q_auto:best,f_auto,w_120/v1/people/{mid}/headshot/67/current")
+        # No Cloudinary fallback — let onerror try /milb/ before generic placeholder
+        return f"{base}/q_auto:best,f_auto,w_120/v1/people/{mid}/headshot/67/current"
 
     PHOTO_ONERROR = (
         "var t=this,s=t.src;"
-        "if(!t.dataset.tried){"
-        "t.dataset.tried=1;"
+        "if(!t.dataset.tried1){"
+        "t.dataset.tried1=1;"
         "t.src=s.replace('/67/','/milb/');"
+        "}else if(!t.dataset.tried2){"
+        "t.dataset.tried2=1;"
+        "t.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png,q_auto:best,f_auto,w_120/v1/people/1/headshot/67/current';"
         "}else{t.style.display='none';}"
     )
 
