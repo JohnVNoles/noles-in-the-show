@@ -544,13 +544,14 @@ def generate_html(player_data: list[dict], news_html: str = ""):
         if not mid:
             return ""
         base = "https://img.mlbstatic.com/mlb-photos/image/upload"
-        return f"{base}/w_120,q_auto:best/v1/people/{mid}/headshot/67/current"
+        return (f"{base}/d_people:generic:headshot:67:current.png,"
+                f"q_auto:best,f_auto,w_120/v1/people/{mid}/headshot/67/current")
 
     PHOTO_ONERROR = (
         "var t=this,s=t.src;"
         "if(!t.dataset.tried){"
         "t.dataset.tried=1;"
-        "t.src=s.includes('/67/')?s.replace('/67/','/milb/'):s.replace('/milb/','/67/');"
+        "t.src=s.replace('/67/','/milb/');"
         "}else{t.style.display='none';}"
     )
 
