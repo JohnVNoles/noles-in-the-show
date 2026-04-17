@@ -118,8 +118,8 @@ def read_roster() -> list[dict]:
         draft_year  = row[5] if len(row) > 5 else None
         draft_round = row[6] if len(row) > 6 else None
         draft_pick  = row[7] if len(row) > 7 else None
-        notes       = row[9] if len(row) > 9 else None
-        milb_url    = row[10] if len(row) > 10 else None
+        milb_url    = row[9] if len(row) > 9 else None
+        notes       = row[10] if len(row) > 10 else None
         if name:
             draft_str = ""
             try:
