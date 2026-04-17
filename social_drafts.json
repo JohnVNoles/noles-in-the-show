@@ -839,5 +839,34 @@
         "ig_caption": "\ud83d\udd25 James Tibbs III is hitting for average and power at AAA \u2014 the complete package.\n\nThe former Florida State Seminole is currently playing for the Oklahoma City Comets.\n\n\ud83d\udcca .306 AVG | 9 HR | 15 RBI | 1.176 OPS\n\nStats update daily at nolesintheshow.com \u2014 bookmark it to follow all your former Noles.\n\n#FSU #Seminoles #NolesInTheShow #FSUBaseball #MiLB #MLB #ProBall #BaseballTwitter #GoNoles"
       }
     ]
+  },
+  {
+    "date": "2026-04-17",
+    "drafts": [
+      {
+        "priority": 4,
+        "type": "pitching",
+        "player": "Wyatt Crowell",
+        "source": "Stats API \u2014 0.00 ERA, 8.0 IP",
+        "x_post": "\u26be Wyatt Crowell | LHP | AA \u2014 Los Angeles Dodgers\n\n0.00 ERA | 8.0 IP | 10 K | 1.00 WHIP\n\nWyatt Crowell has yet to allow an earned run this season.\n\nFull stats: nolesintheshow.com | #FSU #Seminoles",
+        "ig_caption": "\u26be Wyatt Crowell is putting together scoreless innings to open 2026.\n\nThe former Florida State LHP is pitching for the Tulsa Drillers at AA.\n\n\ud83d\udcca 0.00 ERA | 8.0 IP | 10 K | 1.00 WHIP\n\nTrack all your former Noles at nolesintheshow.com \u2014 stats update every morning.\n\n#FSU #Seminoles #NolesInTheShow #FSUBaseball #MiLB #MLB #ProBall #BaseballTwitter #GoNoles"
+      },
+      {
+        "priority": 4,
+        "type": "pitching",
+        "player": "Parker Messick",
+        "source": "Stats API \u2014 1.05 ERA, 25.2 IP",
+        "x_post": "\u26be Parker Messick | LHP | MLB \u2014 Cleveland Guardians\n\n1.05 ERA | 25.2 IP | 25 K | 0.78 WHIP\n\nParker Messick is one of the best starters at MLB right now.\n\nFull stats: nolesintheshow.com | #FSU #Seminoles",
+        "ig_caption": "\u26be Parker Messick is putting together one of the better starts to a season you'll find at MLB.\n\nThe former Florida State LHP is pitching for the Cleveland Guardians at MLB.\n\n\ud83d\udcca 1.05 ERA | 25.2 IP | 25 K | 0.78 WHIP\n\nTrack all your former Noles at nolesintheshow.com \u2014 stats update every morning.\n\n#FSU #Seminoles #NolesInTheShow #FSUBaseball #MiLB #MLB #ProBall #BaseballTwitter #GoNoles"
+      },
+      {
+        "priority": 5,
+        "type": "hitting",
+        "player": "James Tibbs III",
+        "source": "Stats API \u2014 .306 AVG, 9 HR",
+        "x_post": "\ud83d\udd25 James Tibbs III | OF | AAA \u2014 Los Angeles Dodgers\n\n.306 AVG | 9 HR | 15 RBI | 1.176 OPS\n\nHitting .306 with 9 HR for the Comets. Doing damage at AAA.\n\nnolesintheshow.com | #FSU #Seminoles",
+        "ig_caption": "\ud83d\udd25 James Tibbs III is hitting for average and power at AAA \u2014 the complete package.\n\nThe former Florida State Seminole is currently playing for the Oklahoma City Comets.\n\n\ud83d\udcca .306 AVG | 9 HR | 15 RBI | 1.176 OPS\n\nStats update daily at nolesintheshow.com \u2014 bookmark it to follow all your former Noles.\n\n#FSU #Seminoles #NolesInTheShow #FSUBaseball #MiLB #MLB #ProBall #BaseballTwitter #GoNoles"
+      }
+    ]
   }
 ]
