@@ -564,10 +564,12 @@ def generate_html(player_data: list[dict], news_html: str = ""):
     modal_data = []
 
     def player_card(p, idx):
-        stats   = p.get("stats_fmt", {})
-        lvl     = p["level"]
-        color   = level_colors.get(lvl, "#555")
-        txt     = "#333" if lvl in light_levels else "white"
+        stats    = p.get("stats_fmt", {})
+        lvl      = p["level"]
+        base_lvl = p.get("base_level", "") or lvl
+        badge_lvl = base_lvl if lvl in ("60-Day IL", "7-Day IL") else lvl
+        color    = level_colors.get(badge_lvl, "#555")
+        txt      = "#333" if badge_lvl in light_levels else "white"
         pitcher = is_pitcher(p["position"])
         stat_keys = ([("ERA","ERA"),("IP","IP"),("W","W"),("L","L"),
                       ("SV","SV"),("K","K"),("BB","BB"),("WHIP","WHIP")]
@@ -629,7 +631,7 @@ def generate_html(player_data: list[dict], news_html: str = ""):
               {org_line}
             </div>
           </div>
-          <div class="card-level" style="color:{color}">{lvl if lvl not in ("60-Day IL","7-Day IL") else p.get("pre_il_level","—")}</div>
+          <div class="card-level" style="color:{color}">{badge_lvl}</div>
           <div class="card-stats">{stats_html}{no_data_msg}</div>
         </div>'''
 
