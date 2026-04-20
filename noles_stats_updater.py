@@ -713,6 +713,8 @@ def generate_html(player_data: list[dict], news_html: str = ""):
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Noles in the Show — {SEASON} Stats</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="shortcut icon" type="image/png" href="logo.png">
 <style>
 :root {{
   --garnet: #782F40; --garnet-dark: #5a1f2d; --garnet-light: #9e4055;
