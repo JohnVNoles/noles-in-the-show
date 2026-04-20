@@ -519,7 +519,8 @@ def generate_html(player_data: list[dict], news_html: str = ""):
     # Separate active players from released
     active_players  = [p for p in player_data if p["level"] != "Released"]
     released_players = [p for p in player_data if p["level"] == "Released"]
-    sorted_players = sorted(active_players, key=lambda p: level_rank.get(p["level"], 99))
+    sorted_players = sorted(active_players, key=lambda p: level_rank.get(
+        p.get("base_level") or p["level"] if p["level"] in ("60-Day IL", "7-Day IL") else p["level"], 99))
 
     level_colors = {
         "MLB":         "#782F40",  # FSU Garnet
