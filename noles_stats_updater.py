@@ -790,7 +790,7 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
 .legacy-val {{ color: var(--gold); font-size: 1.25rem; font-weight: 800; line-height: 1.2; }}
 
 /* ── Sections ── */
-.section-wrap {{ max-width: 1200px; margin: 48px auto 0; padding: 0 32px; }}
+.section-wrap {{ max-width: 1200px; margin: 48px auto 0; padding: 0 32px; }}.section-wrap#released {{ flex: 0 0 100%; order: 3; }}
 .section-title {{ font-size: 1.3rem; font-weight: 700; color: var(--garnet);
                   border-left: 4px solid var(--gold); padding-left: 12px; margin-bottom: 20px; }}
 .news-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }}
@@ -842,7 +842,7 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
 .controls-updated::before {{ content: '↻'; font-size: 0.78rem; color: var(--garnet); }}
 
 /* ── Two-column roster layout ── */
-.roster-layout {{ display: flex; gap: 24px; align-items: flex-start;
+.roster-layout {{ display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start;
                   max-width: 1400px; margin: 0 auto; padding: 24px 32px; }}
 .roster-main {{ flex: 1; min-width: 0; }}
 .roster-sidebar {{ width: 300px; flex-shrink: 0; position: sticky; top: 118px;
