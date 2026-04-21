@@ -4,7 +4,7 @@ Beyond Howser — Stats Updater
 Pulls current season stats from the MLB Stats API for all players
 on the Beyond Howser roster, then:
   1. Updates a "2026 Stats" sheet in noles_in_the_pros.xlsx
-  2. Generates/refreshes noles_dashboard.html
+  2. Generates/refreshes noles_dashboard.htmlh
 
 Run manually or via scheduled task. Requires: openpyxl, requests
   pip install openpyxl requests
@@ -1369,7 +1369,7 @@ def main():
             continue
 
         pitcher = is_pitcher(player.get("position", ""))
-        fmt     = format_pitching(stats_raw) if pitcher else format_hitting(stats_raw)
+        fmt     = format_pitching(stats_raw["pitching"]) if pitcher else format_hitting(stats_raw["hitting"])
         player["stats_fmt"] = fmt
         player_data.append(player)
         updated_count += 1
