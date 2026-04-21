@@ -66,7 +66,7 @@ nav { background: var(--garnet); padding: 0 32px; display: flex; align-items: ce
 .legacy-val { color: var(--gold); font-size: 1.25rem; font-weight: 800; line-height: 1.2; }
 
 /* ── Sections ── */
-.section-wrap { max-width: 1200px; margin: 48px auto 0; padding: 0 32px; }
+.section-wrap { max-width: 1200px; margin: 48px auto 0; padding: 0 32px; }.section-wrap#released { flex: 0 0 100%; order: 3; }
 .section-title { font-size: 1.3rem; font-weight: 700; color: var(--garnet);
                   border-left: 4px solid var(--gold); padding-left: 12px; margin-bottom: 20px; }
 .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
@@ -118,7 +118,7 @@ nav { background: var(--garnet); padding: 0 32px; display: flex; align-items: ce
 .controls-updated::before { content: '↻'; font-size: 0.78rem; color: var(--garnet); }
 
 /* ── Two-column roster layout ── */
-.roster-layout { display: flex; gap: 24px; align-items: flex-start;
+.roster-layout { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start;
                   max-width: 1400px; margin: 0 auto; padding: 24px 32px; }
 .roster-main { flex: 1; min-width: 0; }
 .roster-sidebar { width: 300px; flex-shrink: 0; position: sticky; top: 118px;
@@ -331,7 +331,7 @@ footer a { color: var(--gold); text-decoration: none; }
     <a href="#news"   class="nav-link">News</a>
     <a href="#about"  class="nav-link">About</a>
   </div>
-  <span class="nav-updated">Updated April 21, 2026 at 08:59 PM</span>
+  <span class="nav-updated">Updated April 21, 2026 at 09:19 PM</span>
 </nav>
 
 <!-- Hero -->
@@ -345,7 +345,7 @@ footer a { color: var(--gold); text-decoration: none; }
       <div class="hero-stat"><div class="num">23</div><div class="lbl">Organizations</div></div>
       <div class="hero-stat"><div class="num">2026</div><div class="lbl">Season</div></div>
     </div>
-    <div class="hero-updated">📅 Stats last updated: <strong>April 21, 2026 at 08:59 PM ET</strong></div>
+    <div class="hero-updated">📅 Stats last updated: <strong>April 21, 2026 at 09:19 PM ET</strong></div>
   </div>
 </section>
 
@@ -398,7 +398,7 @@ footer a { color: var(--gold); text-decoration: none; }
 <button class="filter-btn" data-color="#8B4513" onclick="filterLevel('7-Day IL',this)">7-Day IL</button>
 
   <input class="search-box" type="text" placeholder="Search player…" oninput="applySearch(this.value)">
-  <span class="controls-updated">Updated April 21, 2026 at 08:59 PM ET</span>
+  <span class="controls-updated">Updated April 21, 2026 at 09:19 PM ET</span>
   <div class="view-toggle">
     <button class="view-btn active" id="btnCards" onclick="setView('cards')">⊞ Cards</button>
     <button class="view-btn" id="btnList"  onclick="setView('list')">≡ List</button>
