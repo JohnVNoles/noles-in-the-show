@@ -1,8 +1,8 @@
 """
-Noles in the Show — Stats Updater
+Beyond Howser — Stats Updater
 ==================================
 Pulls current season stats from the MLB Stats API for all players
-on the Noles in the Show roster, then:
+on the Beyond Howser roster, then:
   1. Updates a "2026 Stats" sheet in noles_in_the_pros.xlsx
   2. Generates/refreshes noles_dashboard.html
 
@@ -43,7 +43,7 @@ LEVEL_SPORT_ID = {
 # Levels that skip API stat lookups entirely
 NO_STATS_LEVELS = {"Released", "60-Day IL", "7-Day IL", "Independent"}
 
-HEADERS = {"User-Agent": "NolesInTheShow/1.0"}
+HEADERS = {"User-Agent": "BeyondHowser/1.0"}
 
 # ── Player ID Cache ───────────────────────────────────────────────────────────
 def load_cache():
@@ -379,7 +379,7 @@ def generate_news_cards(player_data: list[dict]) -> str:
             gs   = int(stats.get("GS", "0").replace("—","0"))
         except ValueError:
             continue
-        if ip >= 5 and era <= 2.00:
+        if ip >= 5 and era <= 3.50:
             pitching_candidates.append((era, ip, whip, ks, gs, p))
     pitching_candidates.sort(key=lambda x: x[0])  # best ERA first
 
@@ -402,11 +402,16 @@ def generate_news_cards(player_data: list[dict]) -> str:
             body = (f"The {hand.lower()} {role} has been dominant early at {level}, holding opponents to a "
                     f"{era:.2f} ERA across {ip:.1f} innings with {ks} strikeouts. "
                     f"His {whip:.2f} WHIP tells the same story.")
-        else:
+        elif era <= 2.00:
             headline = f"{name} Posting a {era:.2f} ERA Through {ip:.0f} Innings"
             body = (f"{hand} {name} has been tough to score on at {level} for the {team}, "
                     f"striking out {ks} hitters with a {whip:.2f} WHIP through {ip:.1f} innings. "
                     f"One of the better early-season lines among Seminole pitchers.")
+        else:
+            headline = f"{name} Solid Out of the {team.split()[-1]} {('Rotation' if role == 'starter' else 'Bullpen')}"
+            body = (f"{hand} {name} has a {era:.2f} ERA through {ip:.1f} innings at {level}, "
+                    f"with {ks} strikeouts and a {whip:.2f} WHIP for the {team}. "
+                    f"A reliable arm in the Seminole pipeline.")
         cards.append(_news_card(date_str, headline, body, "Hot Start"))
 
     # ── 4. Hitting milestones — ONE card per distinct angle ────────────────────
@@ -425,8 +430,8 @@ def generate_news_cards(player_data: list[dict]) -> str:
             h   = int(stats.get("H", "0").replace("—","0"))
         except ValueError:
             continue
-        high_avg = ab >= 10 and avg >= 0.340
-        power    = hr >= 5
+        high_avg = ab >= 10 and avg >= 0.300
+        power    = hr >= 3
         if high_avg or power:
             score = avg * 10 + hr * 0.5 + ops
             hitting_candidates.append((score, avg, ab, hr, rbi, ops, sb, h, p))
@@ -441,17 +446,17 @@ def generate_news_cards(player_data: list[dict]) -> str:
         team  = p.get("team", "")
 
         # Pick the most specific angle, skip if we've already run that angle
-        if hr >= 5 and avg >= 0.340 and "five_tool" not in used_angles:
+        if hr >= 3 and avg >= 0.300 and "five_tool" not in used_angles:
             angle = "five_tool"
             headline = f"{name} Hitting .{int(avg*1000):03d} with {hr} Home Runs for {team.split()[-1]}"
-            body = (f"The former Seminole is doing everything right at {level} — elite contact and real power. "
+            body = (f"The former Seminole is doing everything right at {level} — solid contact and real power. "
                     f"His {rbi} RBI and {ops:.3f} OPS rank him among the most productive hitters in the league.")
-        elif hr >= 5 and "power" not in used_angles:
+        elif hr >= 3 and "power" not in used_angles:
             angle = "power"
             headline = f"{name} Already Has {hr} Home Runs at {level}"
             body = (f"The power is not a question for the FSU alum. {name} is slugging for the {team} with "
                     f"a {ops:.3f} OPS and {rbi} RBI. If the ball gets in the air, it's in trouble.")
-        elif sb >= 5 and avg >= 0.300 and "speed" not in used_angles:
+        elif sb >= 3 and avg >= 0.280 and "speed" not in used_angles:
             angle = "speed"
             headline = f"{name} Batting .{int(avg*1000):03d} with {sb} Steals at {level}"
             body = (f"Speed and contact — the former Seminole is a handful at {level} for the {team}. "
@@ -485,7 +490,7 @@ def generate_news_cards(player_data: list[dict]) -> str:
         _news_card(
             date_str,
             "Stats Updating Daily",
-            "Noles in the Show pulls live data from the MLB Stats API every morning. "
+            "Beyond Howser pulls live data from the MLB Stats API every morning. "
             "Roster news is updated manually as it happens. "
             "Bookmark this page and check back throughout the season for the latest numbers.",
             "Site Update"
@@ -515,6 +520,7 @@ def generate_html(player_data: list[dict], news_html: str = ""):
     updated = datetime.now().strftime("%B %d, %Y at %I:%M %p")
 
     levels_order = ["MLB", "AAA", "AA", "High-A", "Low-A", "Rookie", "Independent", "60-Day IL", "7-Day IL"]
+    special_levels = {"Released", "60-Day IL", "7-Day IL"}  # shown in separate section
     level_rank = {l: i for i, l in enumerate(levels_order)}
     # Separate active players from released
     active_players  = [p for p in player_data if p["level"] != "Released"]
@@ -545,15 +551,17 @@ def generate_html(player_data: list[dict], news_html: str = ""):
     mlb_count     = sum(1 for p in active_players if p.get("level") == "MLB")
     org_count     = len(set(p["org"] for p in active_players if p.get("org") and p.get("org") != "—"))
 
-    # ── Photo URL helper ────────────────────────────────────────────
+    # ── Photo URL helper ──────────────────────────────────────────────────────
     def photo_url(p):
         mid = p.get("mlb_id")
         if not mid:
             return ""
         base = "https://img.mlbstatic.com/mlb-photos/image/upload"
-        # No Cloudinary fallback — let onerror try /milb/ before generic placeholder
+        # No Cloudinary fallback here — let onerror handle missing /67/ headshots
+        # so MiLB-only players (like Drew Parrish) get their /milb/ photo instead
         return f"{base}/q_auto:best,f_auto,w_120/v1/people/{mid}/headshot/67/current"
 
+    SHADOW_URL = "https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png,q_auto:best,f_auto,w_120/v1/people/1/headshot/67/current"
     PHOTO_ONERROR = (
         "var t=this,s=t.src;"
         "if(!t.dataset.tried1){"
@@ -561,8 +569,9 @@ def generate_html(player_data: list[dict], news_html: str = ""):
         "t.src=s.replace('/67/','/milb/');"
         "}else if(!t.dataset.tried2){"
         "t.dataset.tried2=1;"
-        "t.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png,q_auto:best,f_auto,w_120/v1/people/1/headshot/67/current';"
-        "}else{t.style.display='none';}"
+        f"t.src='{SHADOW_URL}';"
+        "t.onerror=null;"
+        "}"
     )
 
     # ── Card view ─────────────────────────────────────────────────────────────
@@ -593,7 +602,7 @@ def generate_html(player_data: list[dict], news_html: str = ""):
         purl = photo_url(p)
         photo_tag = (f'<img class="card-photo" src="{purl}" alt="{p["name"]}" onerror="{PHOTO_ONERROR}">'
                      if purl else
-                     f'<div class="card-photo-init">{p["name"][:2].upper()}</div>')
+                     f'<img class="card-photo" src="{SHADOW_URL}" alt="{p["name"]}">')
 
         # Build modal stats table for this player
         if pitcher:
@@ -645,7 +654,7 @@ def generate_html(player_data: list[dict], news_html: str = ""):
     # ── List/table view ───────────────────────────────────────────────────────
     def table_row(p):
         lvl        = p["level"]
-        base_lvl   = p.get("base_level", "") or lvl
+        base_lvl   = p.get("base_level", "") or lvl  # use base level for IL players' badge color
         badge_lvl  = base_lvl if lvl in ("60-Day IL", "7-Day IL") else lvl
         color      = level_colors.get(badge_lvl, "#555")
         txt        = "#333" if badge_lvl in light_levels else "white"
@@ -668,7 +677,7 @@ def generate_html(player_data: list[dict], news_html: str = ""):
         return f'''
         <tr data-level="{lvl}" data-name="{p["name"].lower()}">
           <td class="td-name">
-            <img class="row-photo" src="{photo_url(p)}" alt="{p["name"]}" onerror="{PHOTO_ONERROR}">
+            <img class="row-photo" src="{photo_url(p) or SHADOW_URL}" alt="{p["name"]}" onerror="{PHOTO_ONERROR}">
             <span class="name-text">{name_link}{il_tag} <span class="pos-tag">{p["position"]}</span></span>
           </td>
           <td><span class="lvl-badge" style="background:{color};color:{txt}">{badge_lvl}</span></td>
@@ -683,14 +692,13 @@ def generate_html(player_data: list[dict], news_html: str = ""):
 
     # ── Released players section ───────────────────────────────────────────────
     def released_card(p):
-        return (
-            '<div class="released-card">'
-            f'<div class="released-name">{p["name"]}</div>'
-            f'<div class="released-pos">{p["position"]}</div>'
-            '<div class="released-status">Released</div>'
-            f'<div class="released-note">{p.get("draft","")}</div>'
-            '</div>'
-        )
+        return f'''
+        <div class="released-card">
+          <div class="released-name">{p["name"]}</div>
+          <div class="released-pos">{p["position"]}</div>
+          <div class="released-status">Released</div>
+          <div class="released-note">{p.get("draft","")}</div>
+        </div>'''
 
     released_html = ""
     if released_players:
@@ -712,12 +720,14 @@ def generate_html(player_data: list[dict], news_html: str = ""):
             level_btns += (f'<button class="filter-btn" data-color="{c}" '
                            f'onclick="filterLevel(\'{lvl}\',this)">{lvl}</button>\n')
 
+    modal_json = json.dumps(modal_data, ensure_ascii=False)
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Noles in the Show — {SEASON} Stats</title>
+<title>Beyond Howser — {SEASON} Stats</title>
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="shortcut icon" type="image/png" href="logo.png">
 <style>
@@ -800,6 +810,14 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
 .about-box p:last-child {{ margin-bottom: 0; }}
 .about-box strong {{ color: var(--garnet); }}
 .news-grid-wrap {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); gap: 16px; }}
+.released-grid {{ display: flex; flex-wrap: wrap; gap: 12px; padding: 4px 0 16px; }}
+.released-card {{ background: white; border: 1px solid #ddd; border-radius: 8px; padding: 12px 16px;
+                   display: flex; align-items: center; gap: 14px; min-width: 220px; }}
+.released-name {{ font-weight: 700; font-size: 0.9rem; color: #555; }}
+.released-pos {{ font-size: 0.78rem; color: #999; }}
+.released-status {{ background: #999; color: white; font-size: 0.65rem; font-weight: 700;
+                    padding: 2px 8px; border-radius: 10px; white-space: nowrap; }}
+.released-note {{ font-size: 0.72rem; color: #bbb; display: none; }}
 
 /* ── Controls bar ── */
 .controls {{ background: white; padding: 14px 32px; border-bottom: 1px solid var(--border);
@@ -876,17 +894,6 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
             font-size: 0.78rem; padding: 8px 0; font-style: italic; }}
 .season-note {{ text-align: center; font-size: 0.68rem; color: #aaa;
                 font-style: italic; padding: 2px 0 6px; }}
-
-/* ── Released / No Longer Active section ── */
-.released-grid {{ display: flex; flex-wrap: wrap; gap: 12px; padding: 4px 0 16px; }}
-.released-card {{ background: white; border: 1px solid #ddd; border-radius: 8px;
-                  padding: 12px 16px; display: flex; align-items: center; gap: 14px;
-                  min-width: 220px; }}
-.released-name  {{ font-weight: 600; font-size: 0.9rem; color: #555; flex: 1; }}
-.released-pos   {{ font-size: 0.78rem; color: #aaa; }}
-.released-status {{ background: #999; color: white; font-size: 0.65rem; font-weight: 700;
-                    padding: 2px 8px; border-radius: 10px; white-space: nowrap; }}
-.released-note  {{ font-size: 0.72rem; color: #bbb; margin-left: 4px; }}
 
 /* ── List/Table view ── */
 .list-wrap {{ display: none; }}
@@ -1036,9 +1043,9 @@ footer a {{ color: var(--gold); text-decoration: none; }}
 <!-- Nav -->
 <nav>
   <a href="#home" class="nav-brand">
-    <img class="nav-logo" src="logo.png" alt="Noles in the Show">
+    <img class="nav-logo" src="logo.png" alt="Beyond Howser">
     <div>
-      <div class="nav-title">Noles in the Show</div>
+      <div class="nav-title">Beyond Howser</div>
       <div class="nav-sub">FSU Baseball Alumni Tracker</div>
     </div>
   </a>
@@ -1116,7 +1123,6 @@ footer a {{ color: var(--gold); text-decoration: none; }}
     <div class="grid" id="grid">
 {cards_html}
     </div>
-    {released_html}
     <div class="list-wrap" id="listWrap">
       <div class="roster-card">
         <table>
@@ -1133,6 +1139,8 @@ footer a {{ color: var(--gold); text-decoration: none; }}
     </div>
   </div>
 
+{released_html}
+
   <!-- Sidebar -->
   <div class="roster-sidebar">
 
@@ -1143,17 +1151,17 @@ footer a {{ color: var(--gold); text-decoration: none; }}
       </div>
       <div style="padding:16px 14px;display:flex;flex-direction:column;gap:10px;">
         <p style="font-size:0.82rem;color:#555;line-height:1.5;margin:0 0 4px;">
-          Call-ups. Milestones. The weekly roster. Follow us for every move the Noles make.
+          Call-ups. Milestones. The weekly roster. Follow us for every move FSU alumni make.
         </p>
-        <a href="https://twitter.com/NolesInTheShow" target="_blank" rel="noopener"
+        <a href="https://twitter.com/BeyondHowser" target="_blank" rel="noopener"
            style="display:flex;align-items:center;gap:10px;background:#000;color:white;padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:700;font-size:0.85rem;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.254 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-          Follow @NolesInTheShow
+          Follow @BeyondHowser
         </a>
-        <a href="https://instagram.com/NolesInTheShow" target="_blank" rel="noopener"
+        <a href="https://instagram.com/BeyondHowser" target="_blank" rel="noopener"
            style="display:flex;align-items:center;gap:10px;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);color:white;padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:700;font-size:0.85rem;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-          Follow @NolesInTheShow
+          Follow @BeyondHowser
         </a>
       </div>
     </div>
@@ -1165,20 +1173,11 @@ footer a {{ color: var(--gold); text-decoration: none; }}
         <li>
           <a href="https://seminoles.com/sports/baseball/" target="_blank" rel="noopener">
             <span class="link-icon" style="background:#782F40">
-              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <!-- Left bat -->
-                <path d="M 16 84 C 18 82, 44 52, 50 44 C 54 39, 57 33, 58 27 C 59 22, 57 17, 53 15 C 49 13, 45 15, 43 19 C 41 24, 43 30, 40 36 C 36 44, 12 78, 10 82 Z" fill="white"/>
-                <!-- Right bat -->
-                <path d="M 84 84 C 82 82, 56 52, 50 44 C 46 39, 43 33, 42 27 C 41 22, 43 17, 47 15 C 51 13, 55 15, 57 19 C 59 24, 57 30, 60 36 C 64 44, 88 78, 90 82 Z" fill="white"/>
-                <!-- Ball shadow -->
-                <circle cx="50" cy="51" r="19" fill="rgba(0,0,0,0.15)"/>
-                <!-- Ball -->
-                <circle cx="50" cy="50" r="19" fill="#CEB888"/>
-                <!-- Seam lines -->
-                <path d="M 38 46 C 42 43, 46 53, 50 50 C 54 47, 58 57, 62 54" fill="none" stroke="#782F40" stroke-width="2.2" stroke-linecap="round"/>
-                <path d="M 38 54 C 42 51, 46 61, 50 58 C 54 55, 58 65, 62 62" fill="none" stroke="#782F40" stroke-width="2.2" stroke-linecap="round"/>
-                <!-- Ball outline -->
-                <circle cx="50" cy="50" r="19" fill="none" stroke="white" stroke-width="1.5"/>
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="white" stroke-width="1.5"/>
+                <path d="M4.5 9.5c1.5 0 3 .5 4 1.5s2 1.5 3 1.5 2-.5 3-1.5 2.5-1.5 4-1.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M4.5 14.5c1.5 0 3-.5 4-1.5s2-1.5 3-1.5 2 .5 3 1.5 2.5 1.5 4 1.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="12" y1="2" x2="12" y2="22" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
               </svg>
             </span>
             <span><span class="link-lbl">FSU Baseball</span><span class="link-sub">seminoles.com — Official site</span></span>
@@ -1202,68 +1201,49 @@ footer a {{ color: var(--gold); text-decoration: none; }}
 
 <!-- About Section -->
 <div class="section-wrap" id="about" style="margin-bottom: 48px;">
-  <div class="section-title">About Noles in the Show</div>
+  <div class="section-title">About Beyond Howser</div>
   <div class="about-box">
-    <p><strong>Noles in the Show</strong> is a fan-run tracker dedicated to following Florida State University baseball alumni throughout their professional careers — from rookie ball all the way to the Major Leagues.</p>
-    <p>Florida State has one of the most storied baseball programs in the country. Playing out of <strong>Dick Howser Stadium</strong> in Tallahassee, the Seminoles have made <strong>24 College World Series appearances</strong> and captured more than <strong>20 ACC Championships</strong>. The program has consistently produced professional talent, sending over <strong>350 players</strong> to the draft since the modern era began.</p>
-    <p>This site pulls live stats directly from the MLB Stats API and refreshes regularly throughout the season. Stats reflect current-season performance across all levels of affiliated and independent professional baseball.</p>
-    <p style="font-size:0.82rem; color:#aaa;">Noles in the Show is a fan site and is not affiliated with Florida State University or Major League Baseball. Data sourced from the MLB Stats API.</p>
+    <p><strong>Beyond Howser</strong> is a fan-run tracker dedicated to following Florida State University baseball alumni throughout their professional careers — from rookie ball all the way to the Major Leagues.</p>
+    <p>Florida State has one of the most storied baseball programs in the country. Playing out of <strong>Dick Howser Stadium</strong> in     Tallahassee, FL, the Seminoles have produced dozens of professional players at every level of the game.</p>
+    <p>This tracker pulls live stats directly from the <strong>MLB Stats API</strong> and refreshes automatically each day during the season. Player cards show current {SEASON} season stats, and the roster covers all known FSU alumni active in affiliated or independent professional baseball.</p>
+    <p>Have a player to add or a correction? Reach out on <a href="https://twitter.com/BeyondHowser" target="_blank" rel="noopener" style="color:var(--garnet)">&#120143; @BeyondHowser</a>.</p>
   </div>
 </div>
 
-<!-- Twitter widget script -->
-<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-
-<!-- Footer -->
 <footer>
-  <p><strong style="color:white">Noles in the Show</strong> · Fan site, not affiliated with FSU or MLB.</p>
-  <p style="margin-top:6px;">Data sourced from <a href="https://statsapi.mlb.com">MLB Stats API</a> · {SEASON} Season</p>
+  <span>&#169; {SEASON} <strong style="color:var(--gold)">Beyond Howser</strong></span>
+  &nbsp;&#183;&nbsp; Fan site — not affiliated with FSU or MLB
+  &nbsp;&#183;&nbsp; <a href="https://twitter.com/BeyondHowser" target="_blank" rel="noopener">&#120143; @BeyondHowser</a>
+  &nbsp;&#183;&nbsp; Data: MLB Stats API
 </footer>
 
 <script>
-const MODAL_DATA = {{modal_data_json}};
+const MODAL_DATA = {modal_json};
 
 function openModal(idx) {{
-  const p = MODAL_DATA[idx];
-  if (!p) return;
-  document.getElementById('mName').textContent = p.name;
-  document.getElementById('mSub').textContent  = p.posTeam;
+  const d = MODAL_DATA[idx];
+  if (\!d) return;
+  document.getElementById('mName').textContent = d.name;
+  document.getElementById('mSub').textContent  = d.posTeam;
   const hdr = document.getElementById('mHeader');
-  hdr.style.background = p.color;
-  hdr.style.color = p.txt;
-  const mPhoto = document.getElementById('mPhoto');
-  const mInit  = document.getElementById('mPhotoInit');
-  mInit.textContent = p.initials || '?';
-  mPhoto.dataset.tried = '';
-  if (p.photo) {{
-    mPhoto.style.display = '';
-    mPhoto.src = p.photo;
-    mPhoto.alt = p.name;
-    mPhoto.onerror = function() {{
-      var t=this,s=t.src;
-      if(!t.dataset.tried){{t.dataset.tried=1;t.src=s.includes('/67/')?s.replace('/67/','/milb/'):s.replace('/milb/','/67/');}}
-      else{{t.style.display='none';}}
-    }};
-  }} else {{
-    mPhoto.style.display = 'none';
-  }}
+  hdr.style.background = d.color;
+  hdr.style.color      = d.txt;
+  const init = document.getElementById('mPhotoInit');
+  init.textContent      = d.initials;
+  init.style.background = d.color;
+  init.style.color      = d.txt;
+  const photo = document.getElementById('mPhoto');
+  if (d.photo) {{ photo.src = d.photo; photo.style.display = ''; }}
+  else {{ photo.style.display = 'none'; }}
   const draftEl = document.getElementById('mDraft');
-  draftEl.textContent = p.draft ? '🎓 Draft: ' + p.draft : '';
+  draftEl.textContent = d.draft ? 'Draft: ' + d.draft : '';
   const notesEl = document.getElementById('mNotes');
-  if (p.notes) {{
-    notesEl.textContent = p.notes;
-    notesEl.style.display = 'block';
-  }} else {{
-    notesEl.style.display = 'none';
-  }}
-  document.getElementById('mStatsSection').innerHTML = p.statsHtml;
+  if (d.notes) {{ notesEl.textContent = d.notes; notesEl.style.display = ''; }}
+  else {{ notesEl.style.display = 'none'; }}
+  document.getElementById('mStatsSection').innerHTML = d.statsHtml;
   const milbLink = document.getElementById('mMilbLink');
-  if (p.milbUrl) {{
-    milbLink.href = p.milbUrl;
-    milbLink.style.display = 'inline-block';
-  }} else {{
-    milbLink.style.display = 'none';
-  }}
+  if (d.milbUrl) {{ milbLink.href = d.milbUrl; milbLink.style.display = ''; }}
+  else {{ milbLink.style.display = 'none'; }}
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }}
@@ -1277,38 +1257,35 @@ function maybeClose(e) {{
   if (e.target === document.getElementById('modalOverlay')) closeModal();
 }}
 
-document.addEventListener('keydown', function(e) {{
-  if (e.key === 'Escape') closeModal();
-}});
-
-let currentLevel = 'all';
-let currentSearch = '';
-let currentView = 'cards';
+document.addEventListener('keydown', e => {{ if (e.key === 'Escape') closeModal(); }});
 
 function setView(v) {{
-  currentView = v;
-  document.getElementById('grid').style.display     = v === 'cards' ? 'grid'  : 'none';
-  document.getElementById('listWrap').style.display = v === 'list'  ? 'block' : 'none';
-  document.getElementById('btnCards').classList.toggle('active', v === 'cards');
-  document.getElementById('btnList').classList.toggle('active',  v === 'list');
+  const grid = document.getElementById('grid');
+  const list = document.getElementById('listWrap');
+  const btnC = document.getElementById('btnCards');
+  const btnL = document.getElementById('btnList');
+  if (v === 'cards') {{
+    grid.style.display = ''; list.style.display = 'none';
+    btnC.classList.add('active'); btnL.classList.remove('active');
+  }} else {{
+    grid.style.display = 'none'; list.style.display = '';
+    btnC.classList.remove('active'); btnL.classList.add('active');
+  }}
 }}
+
+let currentLevel  = 'all';
+let currentSearch = '';
 
 function filterLevel(level, btn) {{
   currentLevel = level;
-  // Reset all buttons
   document.querySelectorAll('.filter-btn').forEach(b => {{
     b.classList.remove('active');
-    b.style.background = '';
-    b.style.borderColor = '';
-    b.style.color = '';
+    b.style.background = b.style.borderColor = b.style.color = '';
   }});
-  // Style active button with its level color
   btn.classList.add('active');
   const c = btn.dataset.color || '#782F40';
-  btn.style.background  = c;
-  btn.style.borderColor = c;
-  const lightLevels = ['AA'];
-  btn.style.color = lightLevels.includes(level) ? '#333' : 'white';
+  btn.style.background = btn.style.borderColor = c;
+  btn.style.color = ['AA'].includes(level) ? '#333' : 'white';
   applyFilters();
 }}
 
@@ -1317,7 +1294,6 @@ function applySearch(q) {{
   applyFilters();
 }}
 
-// ── Active nav highlighting on scroll ─────────────────────────────────────
 const navSections = ['home','roster','news','about'];
 function updateActiveNav() {{
   const scrollY = window.scrollY + 80;
@@ -1333,93 +1309,91 @@ function updateActiveNav() {{
 window.addEventListener('scroll', updateActiveNav, {{ passive: true }});
 
 function applyFilters() {{
-  // Cards
   document.querySelectorAll('.card').forEach(card => {{
-    const levelMatch = currentLevel === 'all' || card.dataset.level === currentLevel;
-    const nameMatch  = !currentSearch || card.dataset.name.includes(currentSearch);
-    card.classList.toggle('hidden', !levelMatch || !nameMatch);
+    const lm = currentLevel === 'all' || card.dataset.level === currentLevel;
+    const nm = \!currentSearch || card.dataset.name.includes(currentSearch);
+    card.classList.toggle('hidden', \!lm || \!nm);
   }});
-  // Rows
   document.querySelectorAll('#listBody tr').forEach(row => {{
-    const levelMatch = currentLevel === 'all' || row.dataset.level === currentLevel;
-    const nameMatch  = !currentSearch || row.dataset.name.includes(currentSearch);
-    row.classList.toggle('hidden', !levelMatch || !nameMatch);
+    const lm = currentLevel === 'all' || row.dataset.level === currentLevel;
+    const nm = \!currentSearch || row.dataset.name.includes(currentSearch);
+    row.classList.toggle('hidden', \!lm || \!nm);
   }});
 }}
 </script>
 </body>
 </html>"""
+    # Substitute modal JSON (can't put it in f-string directly due to braces)
+    HTML_PATH.write_text(html, encoding="utf-8")
+    print(f"  ✓ Dashboard written → {HTML_PATH.name}")
 
-    # Inject modal data JSON (done after f-string so we don't need to escape it)
-    modal_json = json.dumps(modal_data, ensure_ascii=False)
-    html = html.replace("{modal_data_json}", modal_json)
-
-    with open(HTML_PATH, "w", encoding="utf-8") as f:
-        f.write(html)
-    print(f"  ✓ HTML dashboard generated → {HTML_PATH.name}")
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 def main():
-    print(f"\n{'='*55}")
-    print(f"  Noles in the Show — Stats Updater  ({SEASON} Season)")
-    print(f"{'='*55}\n")
+    print(f"\n{'='*56}")
+    print(f"  Beyond Howser — Stats Updater  ({SEASON})")
+    print(f"{'='*56}")
 
+    cache  = load_cache()
     roster = read_roster()
-    print(f"→ Loaded {len(roster)} players from roster\n")
+    print(f"\n  Roster loaded: {len(roster)} players")
 
-    cache = load_cache()
-    player_data = []
+    player_data   = []
+    updated_count = 0
 
-    print("→ Looking up player IDs and fetching stats...\n")
-    for p in roster:
-        name = p["name"]
-        level = p.get("level", "")
-        if level in NO_STATS_LEVELS:
-            print(f"  \u2022 {name} \u2026 skipped ({level})")
-            player_data.append({**p, "stats_fmt": {}, "mlb_id": None})
+    for player in roster:
+        name = player.get("name", "")
+        if not name:
             continue
-        milb_url = p.get("milb_url", "")
 
-        # Extract player ID directly from MiLB URL if available (more reliable than name search)
-        if milb_url and milb_url.startswith("http"):
-            try:
-                pid = int(milb_url.rstrip("/").split("-")[-1])
-                cache[name] = pid
-                print(f"  ✓ {name} → ID {pid} (from URL)")
-            except (ValueError, IndexError):
-                pid = find_player_id(name, cache)
-        else:
-            pid = find_player_id(name, cache)
+        print(f"  • {name} … ", end="", flush=True)
 
-        p["mlb_id"] = pid
-        if pid:
-            raw_stats = get_player_stats(pid, SEASON, p.get("level", ""))
-            pitcher = is_pitcher(p["position"])
-            raw = raw_stats["pitching"] if pitcher else raw_stats["hitting"]
-            p["stats_fmt"]    = format_pitching(raw) if pitcher else format_hitting(raw)
-            p["stats_raw"]    = raw_stats
-            p["season_shown"] = raw_stats.get("season_used", SEASON)
-        else:
-            p["stats_fmt"]    = {}
-            p["season_shown"] = SEASON
+        # Skip API lookups for released/IL/independent players
+        level = player.get("level", "")
+        if level in NO_STATS_LEVELS:
+            print(f"skipped ({level})")
+            player_data.append({**player, "stats_fmt": {}, "mlb_id": None})
+            continue
 
-        player_data.append(p)
+        pid = find_player_id(name, cache)
+        if not pid:
+            print("no MLB ID found")
+            player_data.append({**player, "stats_fmt": {}, "mlb_id": None})
+            continue
 
-    print(f"\n→ Updating Excel spreadsheet...")
+        player["mlb_id"] = pid
+        stats_raw = get_player_stats(pid, SEASON, player.get("level", ""))
+        if not stats_raw:
+            print("no stats")
+            player_data.append({**player, "stats_fmt": {}, "mlb_id": pid})
+            continue
+
+        pitcher = is_pitcher(player.get("position", ""))
+        fmt     = format_pitching(stats_raw) if pitcher else format_hitting(stats_raw)
+        player["stats_fmt"] = fmt
+        player_data.append(player)
+        updated_count += 1
+        summary = f"{list(fmt.items())[0][0]}={list(fmt.items())[0][1]}" if fmt else "no stats yet"
+        print(f"ok ({summary})")
+
+    save_cache(cache)
+
+    print(f"\n  Updating Excel …")
     update_excel(player_data)
 
-    print(f"\n→ Generating news cards from stats data...")
-    news_html = generate_news_cards(player_data)
+    print(f"  Generating news cards …")
+    news      = generate_news_cards(player_data)
+    news_cache = load_news_cache()
+    save_news_cache(news_cache)
 
-    print(f"\n→ Generating HTML dashboard...")
-    generate_html(player_data, news_html)
+    print(f"  Building HTML dashboard …")
+    generate_html(player_data, news)
 
-    found = sum(1 for p in player_data if p.get("stats_fmt"))
-    print(f"\n{'='*55}")
-    print(f"  ✅ Done! {found}/{len(player_data)} players have stats data.")
-    print(f"  📊 Excel: {EXCEL_PATH.name}")
-    print(f"  🌐 Dashboard: {HTML_PATH.name}")
-    print(f"{'='*55}\n")
+    print(f"\n  Done\! {updated_count}/{len(roster)} players had live stats.")
+    print(f"  Excel     → {EXCEL_PATH.name}")
+    print(f"  Dashboard → {HTML_PATH.name}")
+    print(f"{'='*56}\n")
+
 
 if __name__ == "__main__":
     main()
