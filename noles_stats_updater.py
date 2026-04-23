@@ -4,7 +4,7 @@ Beyond Howser — Stats Updater
 Pulls current season stats from the MLB Stats API for all players
 on the Beyond Howser roster, then:
   1. Updates a "2026 Stats" sheet in noles_in_the_pros.xlsx
-  2. Generates/refreshes noles_dashboard.htmlh
+  2. Generates/refreshes noles_dashboard.html
 
 Run manually or via scheduled task. Requires: openpyxl, requests
   pip install openpyxl requests
@@ -730,6 +730,7 @@ def generate_html(player_data: list[dict], news_html: str = ""):
 <title>Beyond Howser — {SEASON} Stats</title>
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="shortcut icon" type="image/png" href="logo.png">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4259331118703482" crossorigin="anonymous"></script>
 <style>
 :root {{
   --garnet: #782F40; --garnet-dark: #5a1f2d; --garnet-light: #9e4055;
@@ -790,7 +791,7 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
 .legacy-val {{ color: var(--gold); font-size: 1.25rem; font-weight: 800; line-height: 1.2; }}
 
 /* ── Sections ── */
-.section-wrap {{ max-width: 1200px; margin: 48px auto 0; padding: 0 32px; }}.section-wrap#released {{ flex: 0 0 100%; order: 3; }}
+.section-wrap {{ max-width: 1200px; margin: 48px auto 0; padding: 0 32px; }}
 .section-title {{ font-size: 1.3rem; font-weight: 700; color: var(--garnet);
                   border-left: 4px solid var(--gold); padding-left: 12px; margin-bottom: 20px; }}
 .news-grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }}
@@ -842,7 +843,7 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
 .controls-updated::before {{ content: '↻'; font-size: 0.78rem; color: var(--garnet); }}
 
 /* ── Two-column roster layout ── */
-.roster-layout {{ display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start;
+.roster-layout {{ display: flex; gap: 24px; align-items: flex-start;
                   max-width: 1400px; margin: 0 auto; padding: 24px 32px; }}
 .roster-main {{ flex: 1; min-width: 0; }}
 .roster-sidebar {{ width: 300px; flex-shrink: 0; position: sticky; top: 118px;
@@ -872,7 +873,7 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
 .links-list .link-sub {{ font-size: 0.72rem; color: #aaa; display: block; margin-top: 1px; }}
 
 /* ── Card grid ── */
-.grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }}
+.grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }}
 .card {{ background: white; border-radius: 10px; overflow: hidden;
          box-shadow: var(--shadow); transition: transform .15s, box-shadow .15s; }}
 .card:hover {{ transform: translateY(-2px); box-shadow: 0 6px 20px rgba(120,47,64,0.15); }}
@@ -955,8 +956,8 @@ footer a {{ color: var(--gold); text-decoration: none; }}
   .controls-label {{ display: none; }}
   .search-box {{ width: 130px; }}
   .view-toggle {{ margin-left: 0; }}
-  .roster-layout {{ padding: 12px 16px; }}
-  .grid {{ grid-template-columns: 1fr 1fr; gap: 10px; }}
+  .roster-layout {{ padding: 12px 8px; }}
+  .grid {{ grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }}
   .card-stats {{ grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 8px 8px 10px; }}
   .stat-val {{ font-size: 0.85rem; }}
   .stat-lbl {{ font-size: 0.55rem; }}
@@ -1137,9 +1138,10 @@ footer a {{ color: var(--gold); text-decoration: none; }}
         </table>
       </div>
     </div>
-  </div>
 
 {released_html}
+
+  </div>
 
   <!-- Sidebar -->
   <div class="roster-sidebar">
@@ -1222,7 +1224,7 @@ const MODAL_DATA = {modal_json};
 
 function openModal(idx) {{
   const d = MODAL_DATA[idx];
-  if (\!d) return;
+  if (!d) return;
   document.getElementById('mName').textContent = d.name;
   document.getElementById('mSub').textContent  = d.posTeam;
   const hdr = document.getElementById('mHeader');
@@ -1311,13 +1313,13 @@ window.addEventListener('scroll', updateActiveNav, {{ passive: true }});
 function applyFilters() {{
   document.querySelectorAll('.card').forEach(card => {{
     const lm = currentLevel === 'all' || card.dataset.level === currentLevel;
-    const nm = \!currentSearch || card.dataset.name.includes(currentSearch);
-    card.classList.toggle('hidden', \!lm || \!nm);
+    const nm = !currentSearch || card.dataset.name.includes(currentSearch);
+    card.classList.toggle('hidden', !lm || !nm);
   }});
   document.querySelectorAll('#listBody tr').forEach(row => {{
     const lm = currentLevel === 'all' || row.dataset.level === currentLevel;
-    const nm = \!currentSearch || row.dataset.name.includes(currentSearch);
-    row.classList.toggle('hidden', \!lm || \!nm);
+    const nm = !currentSearch || row.dataset.name.includes(currentSearch);
+    row.classList.toggle('hidden', !lm || !nm);
   }});
 }}
 </script>
