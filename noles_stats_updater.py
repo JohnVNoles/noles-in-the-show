@@ -190,6 +190,93 @@ PITCHERS = {"RHP", "LHP", "SP", "RP", "P"}
 def is_pitcher(position: str) -> bool:
     return any(p in position.upper() for p in PITCHERS)
 
+# ── Game Log Fetching ─────────────────────────────────────────────────────────
+def get_game_log(person_id: int, season: int, level: str = "", limit: int = 5) -> list[dict]:
+    """Fetch recent game-by-game log for a player. Returns list of game dicts."""
+    sport_id = LEVEL_SPORT_ID.get(level)
+    if sport_id is None:
+        return []
+    pitcher = None  # determined from results
+    games = []
+    for group in ("pitching", "hitting"):
+        try:
+            r = requests.get(
+                f"{MLB_API}/people/{person_id}/stats",
+                params={"stats": "gameLog", "season": season,
+                        "group": group, "sportId": sport_id},
+                headers=HEADERS, timeout=10
+            )
+            r.raise_for_status()
+            splits = r.json().get("stats", [])
+            if splits and splits[0].get("splits"):
+                raw = splits[0]["splits"]
+                for s in reversed(raw[-limit:]):  # most recent last → reverse to get newest first
+                    g = s.get("stat", {})
+                    game_info = s.get("game", {})
+                    team_info = s.get("opponent", {})
+                    date_str  = s.get("date", "")[:10]
+                    opp       = team_info.get("abbreviation", "???")
+                    is_home   = s.get("isHome", True)
+                    opp_label = f"{'vs' if is_home else '@'} {opp}"
+                    if group == "pitching":
+                        games.append({
+                            "date": date_str, "opp": opp_label, "group": "pitching",
+                            "IP":   g.get("inningsPitched", "—"),
+                            "H":    str(g.get("hits", "—")),
+                            "ER":   str(g.get("earnedRuns", "—")),
+                            "BB":   str(g.get("baseOnBalls", "—")),
+                            "K":    str(g.get("strikeOuts", "—")),
+                            "ERA":  g.get("era", "—"),
+                        })
+                    else:
+                        ab  = g.get("atBats", 0) or 0
+                        h   = g.get("hits",   0) or 0
+                        hr  = g.get("homeRuns", 0) or 0
+                        rbi = g.get("rbi",     0) or 0
+                        bb  = g.get("baseOnBalls", 0) or 0
+                        avg = f"{h/ab:.3f}".lstrip("0") if ab else "—"
+                        games.append({
+                            "date": date_str, "opp": opp_label, "group": "hitting",
+                            "AB":  str(ab),
+                            "H":   str(h),
+                            "HR":  str(hr),
+                            "RBI": str(rbi),
+                            "BB":  str(bb),
+                            "AVG": avg,
+                        })
+                if games:
+                    break  # got data from this group, don't need the other
+        except Exception as e:
+            print(f"    ! Game log error for {person_id} ({group}): {e}")
+    return games[:limit]
+
+
+def format_game_log_html(games: list[dict], pitcher: bool) -> str:
+    """Build an HTML table from game log entries."""
+    if not games:
+        return '<p style="color:#aaa;font-style:italic;font-size:0.85rem;margin-top:8px;">No recent game data available yet this season.</p>'
+    if pitcher:
+        headers = ["Date", "Opp", "IP", "H", "ER", "BB", "K"]
+        keys    = ["date", "opp", "IP", "H", "ER", "BB", "K"]
+    else:
+        headers = ["Date", "Opp", "AB", "H", "HR", "RBI", "BB"]
+        keys    = ["date", "opp", "AB", "H", "HR", "RBI", "BB"]
+    th = "".join(f"<th>{h}</th>" for h in headers)
+    rows = ""
+    for g in games:
+        hr_val = g.get("HR", "0")
+        hr_cls = ' class="gl-hr"' if hr_val not in ("0", "—", "") else ""
+        tds = ""
+        for k in keys:
+            val = g.get(k, "—")
+            extra = hr_cls if k == "HR" and hr_val not in ("0","—","") else ""
+            tds += f"<td{extra}>{val}</td>"
+        rows += f"<tr>{tds}</tr>"
+    return (f'<table class="modal-stats-table game-log-tbl">'
+            f'<thead><tr>{th}</tr></thead>'
+            f'<tbody>{rows}</tbody></table>')
+
+
 # ── Update Excel Stats Sheet ──────────────────────────────────────────────────
 def update_excel(player_data: list[dict]):
     import openpyxl
@@ -616,18 +703,20 @@ def generate_html(player_data: list[dict], news_html: str = ""):
                      '<p style="color:#aaa;font-style:italic;font-size:0.85rem;">No stats available yet this season.</p>')
 
         initials = "".join(w[0] for w in p["name"].split()[:2]).upper()
+        game_log_html = format_game_log_html(p.get("game_log", []), pitcher)
         modal_data.append({
-            "name":      p["name"],
-            "posTeam":   f'{p["position"]} · {p["team"]}',
-            "lvl":       lvl,
-            "color":     color,
-            "txt":       txt,
-            "draft":     p.get("draft", ""),
-            "notes":     p.get("notes", ""),
-            "photo":     purl,
-            "initials":  initials,
-            "statsHtml": stats_tbl,
-            "milbUrl":   p.get("milb_url", ""),
+            "name":        p["name"],
+            "posTeam":     f'{p["position"]} · {p["team"]}',
+            "lvl":         lvl,
+            "color":       color,
+            "txt":         txt,
+            "draft":       p.get("draft", ""),
+            "notes":       p.get("notes", ""),
+            "photo":       purl,
+            "initials":    initials,
+            "statsHtml":   stats_tbl,
+            "gameLogHtml": game_log_html,
+            "milbUrl":     p.get("milb_url", ""),
         })
 
         il_badge = (f'<span style="display:inline-block;background:#8B4513;color:white;'
@@ -1003,6 +1092,14 @@ footer a {{ color: var(--gold); text-decoration: none; }}
 .modal-notes {{ background:var(--gold-light); border-left:3px solid var(--gold-dark);
   padding:8px 12px; border-radius:0 6px 6px 0; font-size:0.82rem;
   color:#555; margin-bottom:14px; font-style:italic; }}
+.modal-tabs {{ display:flex; gap:6px; margin:12px 0 8px; border-bottom:2px solid var(--border); }}
+.modal-tab {{ background:none; border:none; border-bottom:3px solid transparent; padding:6px 14px;
+              font-size:0.82rem; font-weight:600; color:#888; cursor:pointer; margin-bottom:-2px;
+              transition:color 0.15s,border-color 0.15s; }}
+.modal-tab.active {{ color:var(--garnet); border-bottom-color:var(--garnet); }}
+.modal-tab:hover {{ color:var(--garnet); }}
+.game-log-tbl {{ margin-top:4px; }}
+.gl-hr {{ color:#c0392b; font-weight:700; }}
 .modal-stats-table {{ width:100%; border-collapse:collapse; font-size:0.82rem; margin-top:4px; }}
 .modal-stats-table th {{ background:var(--garnet); color:white; padding:6px 8px;
   text-align:center; font-size:0.72rem; letter-spacing:.04em; }}
@@ -1034,7 +1131,12 @@ footer a {{ color: var(--gold); text-decoration: none; }}
       </div>
       <div class="modal-draft" id="mDraft"></div>
       <div class="modal-notes" id="mNotes" style="display:none"></div>
+      <div class="modal-tabs">
+        <button class="modal-tab active" id="tabStats" onclick="switchTab('stats')">Season Stats</button>
+        <button class="modal-tab" id="tabLog"   onclick="switchTab('log')">Recent Games</button>
+      </div>
       <div id="mStatsSection"></div>
+      <div id="mGameLogSection" style="display:none"></div>
       <div style="clear:both"></div>
       <a class="modal-milb-link" id="mMilbLink" href="#" target="_blank" rel="noopener" style="display:none">View on MiLB.com ↗</a>
     </div>
@@ -1251,12 +1353,33 @@ function openModal(idx) {{
   const notesEl = document.getElementById('mNotes');
   if (d.notes) {{ notesEl.textContent = d.notes; notesEl.style.display = ''; }}
   else {{ notesEl.style.display = 'none'; }}
-  document.getElementById('mStatsSection').innerHTML = d.statsHtml;
+  document.getElementById('mStatsSection').innerHTML   = d.statsHtml;
+  document.getElementById('mGameLogSection').innerHTML = d.gameLogHtml || '';
+  // Reset to Season Stats tab
+  switchTab('stats');
   const milbLink = document.getElementById('mMilbLink');
   if (d.milbUrl) {{ milbLink.href = d.milbUrl; milbLink.style.display = ''; }}
   else {{ milbLink.style.display = 'none'; }}
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
+}}
+
+function switchTab(tab) {{
+  const statsEl = document.getElementById('mStatsSection');
+  const logEl   = document.getElementById('mGameLogSection');
+  const tabS    = document.getElementById('tabStats');
+  const tabL    = document.getElementById('tabLog');
+  if (tab === 'stats') {{
+    statsEl.style.display = '';
+    logEl.style.display   = 'none';
+    tabS.classList.add('active');
+    tabL.classList.remove('active');
+  }} else {{
+    statsEl.style.display = 'none';
+    logEl.style.display   = '';
+    tabS.classList.remove('active');
+    tabL.classList.add('active');
+  }}
 }}
 
 function closeModal() {{
@@ -1363,13 +1486,13 @@ def main():
         level = player.get("level", "")
         if level in NO_STATS_LEVELS:
             print(f"skipped ({level})")
-            player_data.append({**player, "stats_fmt": {}, "mlb_id": None})
+            player_data.append({**player, "stats_fmt": {}, "mlb_id": None, "game_log": []})
             continue
 
         pid = find_player_id(name, cache)
         if not pid:
             print("no MLB ID found")
-            player_data.append({**player, "stats_fmt": {}, "mlb_id": None})
+            player_data.append({**player, "stats_fmt": {}, "mlb_id": None, "game_log": []})
             continue
 
         player["mlb_id"] = pid
@@ -1382,6 +1505,8 @@ def main():
         pitcher = is_pitcher(player.get("position", ""))
         fmt     = format_pitching(stats_raw["pitching"]) if pitcher else format_hitting(stats_raw["hitting"])
         player["stats_fmt"] = fmt
+        # Fetch recent game log
+        player["game_log"] = get_game_log(pid, SEASON, player.get("level", ""))
         player_data.append(player)
         updated_count += 1
         summary = f"{list(fmt.items())[0][0]}={list(fmt.items())[0][1]}" if fmt else "no stats yet"
