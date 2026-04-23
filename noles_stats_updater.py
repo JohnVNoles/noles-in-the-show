@@ -215,7 +215,9 @@ def get_game_log(person_id: int, season: int, level: str = "", limit: int = 5) -
                     g = s.get("stat", {})
                     game_info = s.get("game", {})
                     team_info = s.get("opponent", {})
-                    date_str  = s.get("date", "")[:10]
+                    raw_date  = s.get("date", "")[:10]
+                    date_str  = (f"{raw_date[5:7]}-{raw_date[8:10]}-{raw_date[:4]}"
+                                 if len(raw_date) == 10 else raw_date)
                     opp       = (team_info.get("abbreviation")
                                  or team_info.get("teamCode")
                                  or team_info.get("fileCode")
