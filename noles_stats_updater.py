@@ -1235,8 +1235,17 @@ function openModal(idx) {{
   init.style.background = d.color;
   init.style.color      = d.txt;
   const photo = document.getElementById('mPhoto');
-  if (d.photo) {{ photo.src = d.photo; photo.style.display = ''; }}
-  else {{ photo.style.display = 'none'; }}
+  if (d.photo) {{
+    photo.style.display = '';
+    photo.onerror = function() {{
+      const s = this.src;
+      if (!this.dataset.tried1) {{ this.dataset.tried1=1; this.src=s.replace('/67/','/milb/'); }}
+      else if (!this.dataset.tried2) {{ this.dataset.tried2=1; this.src='{SHADOW_URL}'; this.onerror=null; }}
+    }};
+    photo.dataset.tried1 = '';
+    photo.dataset.tried2 = '';
+    photo.src = d.photo;
+  }} else {{ photo.style.display = 'none'; }}
   const draftEl = document.getElementById('mDraft');
   draftEl.textContent = d.draft ? 'Draft: ' + d.draft : '';
   const notesEl = document.getElementById('mNotes');
@@ -1270,7 +1279,7 @@ function setView(v) {{
     grid.style.display = ''; list.style.display = 'none';
     btnC.classList.add('active'); btnL.classList.remove('active');
   }} else {{
-    grid.style.display = 'none'; list.style.display = '';
+    grid.style.display = 'none'; list.style.display = 'block';
     btnC.classList.remove('active'); btnL.classList.add('active');
   }}
 }}
