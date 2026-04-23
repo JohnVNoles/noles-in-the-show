@@ -203,7 +203,8 @@ def get_game_log(person_id: int, season: int, level: str = "", limit: int = 5) -
             r = requests.get(
                 f"{MLB_API}/people/{person_id}/stats",
                 params={"stats": "gameLog", "season": season,
-                        "group": group, "sportId": sport_id},
+                        "group": group, "sportId": sport_id,
+                        "hydrate": "opponent"},
                 headers=HEADERS, timeout=10
             )
             r.raise_for_status()
@@ -215,7 +216,10 @@ def get_game_log(person_id: int, season: int, level: str = "", limit: int = 5) -
                     game_info = s.get("game", {})
                     team_info = s.get("opponent", {})
                     date_str  = s.get("date", "")[:10]
-                    opp       = team_info.get("abbreviation", "???")
+                    opp       = (team_info.get("abbreviation")
+                                 or team_info.get("teamCode")
+                                 or team_info.get("fileCode")
+                                 or (team_info.get("name", "")[:3].upper() if team_info.get("name") else "???"))
                     is_home   = s.get("isHome", True)
                     opp_label = f"{'vs' if is_home else '@'} {opp}"
                     if group == "pitching":
