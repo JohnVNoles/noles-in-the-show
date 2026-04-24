@@ -2,8 +2,8 @@
 Noles in the Show — Social Post Drafter
 ========================================
 Runs after noles_stats_updater.py each day. Uses the same player_data
-pipeline to draft ready-to-post content for X (@NolesInTheShow) and
-Instagram (@nolesintheshow), then writes a styled HTML email body to
+pipeline to draft ready-to-post content for X (@BeyondHowser) and
+Instagram (@beyondhowser), then writes a styled HTML email body to
 email_body.html for delivery via GitHub Actions (dawidd6/action-send-mail).
 
 Sources checked (in order):
@@ -38,12 +38,12 @@ EXCEL_PATH      = BASE_DIR / "noles_in_the_pros.xlsx"
 DRAFTS_PATH     = BASE_DIR / "social_drafts.json"   # rolling log of all drafts
 SEASON          = datetime.now().year
 MLB_API         = "https://statsapi.mlb.com/api/v1"
-HEADERS         = {"User-Agent": "NolesInTheShow/1.0"}
+HEADERS         = {"User-Agent": "BeyondHowser/1.0"}
 
-X_HANDLE        = "@NolesInTheShow"
-IG_HANDLE       = "@nolesintheshow"
-FSU_HASHTAGS    = "#FSU #Seminoles #NolesInTheShow #FSUBaseball"
-IG_HASHTAGS     = "#FSU #Seminoles #NolesInTheShow #FSUBaseball #MiLB #MLB #ProBall #BaseballTwitter #GoNoles"
+X_HANDLE        = "@BeyondHowser"
+IG_HANDLE       = "@beyondhowser"
+FSU_HASHTAGS    = "#FSU #Seminoles #BeyondHowser #FSUBaseball"
+IG_HASHTAGS     = "#FSU #Seminoles #BeyondHowser #FSUBaseball #MiLB #MLB #ProBall #BaseballTwitter #GoNoles"
 
 TEAMS_WEBHOOK   = os.environ.get("TEAMS_WEBHOOK_URL", "")
 EMAIL_BODY_PATH = BASE_DIR / "email_body.html"
@@ -124,6 +124,59 @@ def get_player_data() -> list[dict]:
     except Exception as e:
         print(f"  ! Could not load player data: {e}")
         return []
+
+# ── Game log fetching (recent outings) ───────────────────────────────────────
+LEVEL_SPORT_ID = {"MLB": 1, "AAA": 11, "AA": 12, "High-A": 13, "Low-A": 14, "Rookie": 16}
+
+def get_recent_games(person_id: int, level: str, is_pitcher: bool, limit: int = 3) -> list[dict]:
+    """Fetch last N game logs for a player. Returns list of game stat dicts."""
+    sport_id = LEVEL_SPORT_ID.get(level)
+    if not sport_id or not person_id:
+        return []
+    group = "pitching" if is_pitcher else "hitting"
+    try:
+        r = requests.get(
+            f"{MLB_API}/people/{person_id}/stats",
+            params={"stats": "gameLog", "season": SEASON,
+                    "group": group, "sportId": sport_id,
+                    "hydrate": "opponent"},
+            headers=HEADERS, timeout=10
+        )
+        r.raise_for_status()
+        splits = r.json().get("stats", [{}])[0].get("splits", [])
+        if not splits:
+            return []
+        recent = splits[-limit:]  # most recent N games
+        games = []
+        for s in recent:
+            g = s.get("stat", {})
+            opp_info = s.get("opponent", {})
+            opp = (opp_info.get("abbreviation") or opp_info.get("name", "")[:3].upper() or "???")
+            is_home = s.get("isHome", True)
+            date = s.get("date", "")[:10]
+            if is_pitcher:
+                games.append({
+                    "date": date, "opp": f"{'vs' if is_home else '@'} {opp}",
+                    "IP":  g.get("inningsPitched", "0"),
+                    "ER":  g.get("earnedRuns", 0),
+                    "K":   g.get("strikeOuts", 0),
+                    "BB":  g.get("baseOnBalls", 0),
+                    "H":   g.get("hits", 0),
+                })
+            else:
+                games.append({
+                    "date": date, "opp": f"{'vs' if is_home else '@'} {opp}",
+                    "AB":  g.get("atBats", 0),
+                    "H":   g.get("hits", 0),
+                    "HR":  g.get("homeRuns", 0),
+                    "RBI": g.get("rbi", 0),
+                    "BB":  g.get("baseOnBalls", 0),
+                })
+        return games
+    except Exception as e:
+        print(f"  ! Game log error for {person_id}: {e}")
+        return []
+
 
 # ── News scraping ─────────────────────────────────────────────────────────────
 def scrape_news_mentions(player_names: list[str]) -> list[dict]:
@@ -264,7 +317,7 @@ def build_drafts(player_data: list[dict], news_mentions: list[dict]) -> list[dic
             x = (
                 f"📈 {name} has been promoted to {level} with the {org}.\n\n"
                 f"The former Seminole is now suiting up for the {team}. "
-                f"Stats: nolesintheshow.com\n\n"
+                f"Stats: beyondhowser.com\n\n"
                 f"#FSU #Seminoles #MiLB"
             )
             ig = (
@@ -272,7 +325,7 @@ def build_drafts(player_data: list[dict], news_mentions: list[dict]) -> list[dic
                 f"The former Florida State Seminole has been promoted to {level} "
                 f"in the {org} system, now playing for the {team}. "
                 f"The Nole pipeline keeps producing talent at every level.\n\n"
-                f"Check nolesintheshow.com for his full stats.\n\n"
+                f"Check beyondhowser.com for his full stats.\n\n"
                 f"{IG_HASHTAGS} #Promotion #MiLB"
             )
             drafts.append({
@@ -297,14 +350,14 @@ def build_drafts(player_data: list[dict], news_mentions: list[dict]) -> list[dic
         x = (
             f"📰 {name} ({level} - {team}) is making news.\n\n"
             f'"{title}"\n\n'
-            f"via {source} | Full stats: nolesintheshow.com\n\n"
+            f"via {source} | Full stats: beyondhowser.com\n\n"
             f"#FSU #Seminoles"
         )
         # Trim X post if over 280
         if len(x) > 280:
             x = (
                 f"📰 {name} ({level} — {team}) is making news.\n\n"
-                f"Full stats: nolesintheshow.com\n\n"
+                f"Full stats: beyondhowser.com\n\n"
                 f"#FSU #Seminoles"
             )
 
@@ -312,7 +365,7 @@ def build_drafts(player_data: list[dict], news_mentions: list[dict]) -> list[dic
             f"📰 {name} is getting some coverage.\n\n"
             f'"{title}"\n\n'
             f"The former Seminole is currently at {level} with the {team}. "
-            f"Check nolesintheshow.com for his daily stats all season.\n\n"
+            f"Check beyondhowser.com for his daily stats all season.\n\n"
             f"{IG_HASHTAGS}"
         )
         drafts.append({
@@ -320,6 +373,118 @@ def build_drafts(player_data: list[dict], news_mentions: list[dict]) -> list[dic
             "source": f"RSS — {source}: {title}",
             "x_post": x, "ig_caption": ig,
             "article_link": link,
+        })
+        used_players.add(name)
+
+    # ── Priority 3.5: Recent hot streak (last 2-3 games) ─────────────────────
+    for p in player_data:
+        name  = p["name"]
+        if name in used_players:
+            continue
+        level  = p.get("level", "")
+        team   = p.get("team", "")
+        org    = p.get("org", "")
+        pos    = p.get("position", "")
+        pid    = p.get("mlb_id")
+        pitcher = is_pitcher(pos)
+
+        if not pid or not level:
+            continue
+
+        games = get_recent_games(pid, level, pitcher, limit=3)
+        if len(games) < 2:
+            continue
+
+        if pitcher:
+            # Hot streak: last 2+ starts with low ER and decent IP
+            recent2 = games[-2:]
+            total_ip  = sum(float(g["IP"] or 0) for g in recent2)
+            total_er  = sum(int(g["ER"] or 0) for g in recent2)
+            total_k   = sum(int(g["K"]  or 0) for g in recent2)
+            total_bb  = sum(int(g["BB"] or 0) for g in recent2)
+            if total_ip < 8 or total_er > 2:
+                continue  # not hot enough
+
+            hand = "LHP" if "LHP" in pos else "RHP"
+            era_span = f"{(total_er * 9 / total_ip):.2f}" if total_ip else "—"
+            game_lines = "  |  ".join(
+                f"{g['opp']}: {g['IP']} IP, {g['ER']} ER, {g['K']} K"
+                for g in recent2
+            )
+
+            if total_er == 0:
+                hook_x  = f"{name} hasn't allowed an earned run in his last 2 outings."
+                hook_ig = f"Back-to-back scoreless outings for {name}."
+            elif total_er <= 1:
+                hook_x  = f"{name} has been virtually unhittable over his last 2 starts."
+                hook_ig = f"{name} has been one of the best arms at {level} over the last two weeks."
+            else:
+                hook_x  = f"{name} is locked in right now — strong back-to-back outings."
+                hook_ig = f"{name} is putting together back-to-back quality starts at {level}."
+
+            x = (
+                f"🔥 {name} | {hand} | {level} — {org}\n\n"
+                f"Last 2 outings: {total_ip:.1f} IP | {total_er} ER | {total_k} K\n\n"
+                f"{hook_x}\n\n"
+                f"beyondhowser.com | {FSU_HASHTAGS}"
+            )
+            ig = (
+                f"🔥 {hook_ig}\n\n"
+                f"The former Florida State {hand} is currently pitching for the {team} at {level}.\n\n"
+                f"📊 Last 2 starts:\n{game_lines}\n\n"
+                f"Daily stats for every former Nole at beyondhowser.com\n\n"
+                f"{IG_HASHTAGS}"
+            )
+
+        else:
+            # Hot hitter: last 2 games with hits and/or HRs
+            recent2 = games[-2:]
+            total_ab  = sum(int(g["AB"] or 0) for g in recent2)
+            total_h   = sum(int(g["H"]  or 0) for g in recent2)
+            total_hr  = sum(int(g["HR"] or 0) for g in recent2)
+            total_rbi = sum(int(g["RBI"] or 0) for g in recent2)
+            if total_ab < 5 or total_h < 3:
+                continue  # not hot enough
+            avg_span = f".{int(total_h/total_ab*1000):03d}" if total_ab else "—"
+
+            game_lines = "  |  ".join(
+                f"{g['opp']}: {g['H']}-for-{g['AB']}"
+                + (f", {g['HR']} HR" if int(g["HR"] or 0) > 0 else "")
+                + (f", {g['RBI']} RBI" if int(g["RBI"] or 0) > 0 else "")
+                for g in recent2
+            )
+
+            if total_hr >= 2:
+                hook_x  = f"{name} has gone deep twice in his last 2 games."
+                hook_ig = f"{name} has been on a power surge, going deep twice over the last two games."
+            elif total_h >= 5:
+                hook_x  = f"{name} is on a tear right now — {total_h} hits over his last 2 games."
+                hook_ig = f"{name} has been locked in at the plate, collecting {total_h} hits over his last 2 games."
+            else:
+                hook_x  = f"{name} is swinging a hot bat over the last couple games."
+                hook_ig = f"{name} has been one of the hotter bats at {level} recently."
+
+            x = (
+                f"🔥 {name} | {pos} | {level} — {org}\n\n"
+                f"Last 2 games: {total_h}-for-{total_ab}{f', {total_hr} HR' if total_hr else ''}, {total_rbi} RBI\n\n"
+                f"{hook_x}\n\n"
+                f"beyondhowser.com | {FSU_HASHTAGS}"
+            )
+            ig = (
+                f"🔥 {hook_ig}\n\n"
+                f"The former Florida State Seminole is currently playing for the {team} at {level}.\n\n"
+                f"📊 Last 2 games:\n{game_lines}\n\n"
+                f"Daily stats for every former Nole at beyondhowser.com\n\n"
+                f"{IG_HASHTAGS}"
+            )
+
+        if len(x) > 280:
+            x = x[:277] + "..."
+
+        drafts.append({
+            "priority": 3, "type": "hot_streak", "player": name,
+            "source": f"Game log — last 2 games",
+            "x_post": x, "ig_caption": ig,
         })
         used_players.add(name)
 
@@ -372,18 +537,18 @@ def build_drafts(player_data: list[dict], news_mentions: list[dict]) -> list[dic
             f"⚾ {name} | {hand} | {level} — {org}\n\n"
             f"{stat_line}\n\n"
             f"{headline_x}\n\n"
-            f"Full stats: nolesintheshow.com | #FSU #Seminoles"
+            f"Full stats: beyondhowser.com | #FSU #Seminoles"
         )
         ig = (
             f"⚾ {name} is putting together {headline_ig}.\n\n"
             f"The former Florida State {hand} is pitching for the {team} at {level}.\n\n"
             f"📊 {stat_line}\n\n"
-            f"Track all your former Noles at nolesintheshow.com — stats update every morning.\n\n"
+            f"Track all your former Noles at beyondhowser.com — stats update every morning.\n\n"
             f"{IG_HASHTAGS}"
         )
         # Trim X if needed
         if len(x) > 280:
-            x = f"⚾ {name} | {hand} | {level}\n\n{stat_line}\n\n{headline_x}\n\nnolesintheshow.com | #FSU #Seminoles"
+            x = f"⚾ {name} | {hand} | {level}\n\n{stat_line}\n\n{headline_x}\n\nbeyondhowser.com | #FSU #Seminoles"
 
         drafts.append({
             "priority": 4, "type": "pitching", "player": name,
@@ -454,17 +619,17 @@ def build_drafts(player_data: list[dict], news_mentions: list[dict]) -> list[dic
             f"🔥 {name} | {pos} | {level} — {org}\n\n"
             f"{stat_line}\n\n"
             f"{note_x}\n\n"
-            f"nolesintheshow.com | #FSU #Seminoles"
+            f"beyondhowser.com | #FSU #Seminoles"
         )
         ig = (
             f"🔥 {name} is {note_ig}.\n\n"
             f"The former Florida State Seminole is currently playing for the {team}.\n\n"
             f"📊 {stat_line}\n\n"
-            f"Stats update daily at nolesintheshow.com — bookmark it to follow all your former Noles.\n\n"
+            f"Stats update daily at beyondhowser.com — bookmark it to follow all your former Noles.\n\n"
             f"{IG_HASHTAGS}"
         )
         if len(x) > 280:
-            x = f"🔥 {name} | {pos} | {level}\n\n{stat_line}\n\n{note_x}\n\nnolesintheshow.com | #FSU #Seminoles"
+            x = f"🔥 {name} | {pos} | {level}\n\n{stat_line}\n\n{note_x}\n\nbeyondhowser.com | #FSU #Seminoles"
 
         drafts.append({
             "priority": 5, "type": "hitting", "player": name,
@@ -493,8 +658,8 @@ def build_drafts(player_data: list[dict], news_mentions: list[dict]) -> list[dic
             f"📊 {SEASON} Noles in the Show — Weekly Update\n\n"
             f"{total} former FSU Seminoles in pro ball across {orgs} organizations.\n"
             f"{mlb_ct} on active MLB rosters.\n\n"
-            f"Full stats at nolesintheshow.com\n\n"
-            f"#FSU #Seminoles #NolesInTheShow"
+            f"Full stats at beyondhowser.com\n\n"
+            f"#FSU #Seminoles #BeyondHowser"
         )
         ig = (
             f"📊 {SEASON} Season Update — {month_str}\n\n"
@@ -503,7 +668,7 @@ def build_drafts(player_data: list[dict], news_mentions: list[dict]) -> list[dic
             f"Breakdown: {level_lines}.\n\n"
             f"{'Including ' + str(mlb_ct) + ' on active MLB rosters. ' if mlb_ct else ''}"
             f"The Seminole pipeline is producing at every level.\n\n"
-            f"Daily stats for every player at nolesintheshow.com.\n\n"
+            f"Daily stats for every player at beyondhowser.com.\n\n"
             f"{IG_HASHTAGS}"
         )
         drafts.append({
@@ -561,11 +726,11 @@ def write_email_body(drafts: list[dict]) -> bool:
     </p>
     {"".join(draft_blocks)}
     <div style="text-align:center;padding-top:12px;border-top:1px solid #eee;margin-top:8px">
-      <a href="https://nolesintheshow.com" style="color:#782F40;font-weight:bold">nolesintheshow.com</a>
+      <a href="https://beyondhowser.com" style="color:#782F40;font-weight:bold">beyondhowser.com</a>
       &nbsp;&middot;&nbsp;
-      <a href="https://x.com/NolesInTheShow" style="color:#1da1f2">@NolesInTheShow</a>
+      <a href="https://x.com/BeyondHowser" style="color:#1da1f2">@BeyondHowser</a>
       &nbsp;&middot;&nbsp;
-      <a href="https://www.instagram.com/nolesintheshow/" style="color:#e1306c">@nolesintheshow</a>
+      <a href="https://www.instagram.com/beyondhowser/" style="color:#e1306c">@beyondhowser</a>
     </div>
   </div>
 </body>
@@ -608,11 +773,11 @@ def send_to_teams(drafts: list[dict]) -> bool:
             "activitySubtitle": f"Source: {source}",
             "facts": [
                 {
-                    "name": "🐦 X Post (copy → post at x.com/NolesInTheShow):",
+                    "name": "🐦 X Post (copy → post at x.com/BeyondHowser):",
                     "value": x_post,
                 },
                 {
-                    "name": "📸 Instagram Caption (copy → post at @nolesintheshow):",
+                    "name": "📸 Instagram Caption (copy → post at @beyondhowser):",
                     "value": ig_preview,
                 },
             ],
@@ -634,30 +799,30 @@ def send_to_teams(drafts: list[dict]) -> bool:
                     f"{len(drafts)} draft(s) ready. Copy each into X and Instagram. "
                     f"Review before posting — stats are pulled live each morning."
                 ),
-                "activityImage": "https://nolesintheshow.com/logo.png",
+                "activityImage": "https://beyondhowser.com/logo.png",
                 "markdown": True,
             },
             *sections,
             {
                 "activityTitle": "📊 Live Stats",
-                "text": "[View full roster at nolesintheshow.com](https://nolesintheshow.com)",
+                "text": "[View full roster at beyondhowser.com](https://beyondhowser.com)",
             },
         ],
         "potentialAction": [
             {
                 "@type": "OpenUri",
-                "name": "Open nolesintheshow.com",
-                "targets": [{"os": "default", "uri": "https://nolesintheshow.com"}],
+                "name": "Open beyondhowser.com",
+                "targets": [{"os": "default", "uri": "https://beyondhowser.com"}],
             },
             {
                 "@type": "OpenUri",
                 "name": "Post to X",
-                "targets": [{"os": "default", "uri": "https://x.com/NolesInTheShow"}],
+                "targets": [{"os": "default", "uri": "https://x.com/BeyondHowser"}],
             },
             {
                 "@type": "OpenUri",
                 "name": "Post to Instagram",
-                "targets": [{"os": "default", "uri": "https://www.instagram.com/nolesintheshow/"}],
+                "targets": [{"os": "default", "uri": "https://www.instagram.com/beyondhowser/"}],
             },
         ],
     }
