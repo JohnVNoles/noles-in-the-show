@@ -1466,6 +1466,10 @@ function applyFilters() {{
     # Substitute modal JSON (can't put it in f-string directly due to braces)
     HTML_PATH.write_text(html, encoding="utf-8")
     print(f"  ✓ Dashboard written → {HTML_PATH.name}")
+    # Also write index.html (GitHub Pages live site)
+    index_path = BASE_DIR / "index.html"
+    index_path.write_text(html, encoding="utf-8")
+    print(f"  ✓ index.html updated → {index_path.name}")
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
