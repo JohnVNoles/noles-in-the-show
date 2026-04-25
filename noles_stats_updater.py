@@ -45,6 +45,19 @@ NO_STATS_LEVELS = {"Released", "60-Day IL", "7-Day IL", "Independent"}
 
 HEADERS = {"User-Agent": "BeyondHowser/1.0"}
 
+# ── Manual Stats Overrides ────────────────────────────────────────────────────
+# Used when the MLB Stats API is unreachable or hasn't indexed a player yet.
+# Live API stats will overwrite these when available.
+MANUAL_STATS: dict[str, dict] = {
+    "Joe Charles": {
+        "pitching": {
+            "gamesPlayed": 4, "gamesStarted": 0, "wins": 0, "losses": 0,
+            "saves": 0, "inningsPitched": "4.1", "era": "12.46",
+            "whip": "2.31", "strikeOuts": 9, "baseOnBalls": 7,
+        }
+    },
+}
+
 # ── Player ID Cache ───────────────────────────────────────────────────────────
 def load_cache():
     if CACHE_PATH.exists():
@@ -1507,10 +1520,16 @@ def main():
 
         player["mlb_id"] = pid
         stats_raw = get_player_stats(pid, SEASON, player.get("level", ""))
-        if not stats_raw:
-            print("no stats")
-            player_data.append({**player, "stats_fmt": {}, "mlb_id": pid})
-            continue
+        # Fall back to manual override if API returned nothing useful
+        api_empty = not stats_raw.get("hitting") and not stats_raw.get("pitching")
+        if not stats_raw or api_empty:
+            if name in MANUAL_STATS:
+                stats_raw = MANUAL_STATS[name]
+                print(f"(manual override) ", end="", flush=True)
+            else:
+                print("no stats")
+                player_data.append({**player, "stats_fmt": {}, "mlb_id": pid})
+                continue
 
         pitcher = is_pitcher(player.get("position", ""))
         fmt     = format_pitching(stats_raw["pitching"]) if pitcher else format_hitting(stats_raw["hitting"])
