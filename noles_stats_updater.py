@@ -36,12 +36,13 @@ LEVEL_SPORT_ID = {
     "Rookie":      15,
     "Independent": None,
     "60-Day IL":   None,
+    "Full Season IL": None,
     "7-Day IL":    None,
     "Released":    None,
 }
 
 # Levels that skip API stat lookups entirely
-NO_STATS_LEVELS = {"Released", "60-Day IL", "7-Day IL", "Independent"}
+NO_STATS_LEVELS = {"Released", "60-Day IL", "7-Day IL", "Full Season IL", "Independent"}
 
 HEADERS = {"User-Agent": "BeyondHowser/1.0"}
 
@@ -625,15 +626,15 @@ def generate_news_cards(player_data: list[dict]) -> str:
 def generate_html(player_data: list[dict], news_html: str = ""):
     updated = datetime.now().strftime("%B %d, %Y at %I:%M %p")
 
-    levels_order = ["MLB", "AAA", "AA", "High-A", "Low-A", "Rookie", "Independent", "60-Day IL", "7-Day IL"]
-    special_levels = {"Released", "60-Day IL", "7-Day IL"}  # shown in separate section
+    levels_order = ["MLB", "AAA", "AA", "High-A", "Low-A", "Rookie", "Independent", "60-Day IL", "7-Day IL", "Full Season IL"]
+    special_levels = {"Released", "60-Day IL", "7-Day IL", "Full Season IL"}  # shown in separate section
     level_rank = {l: i for i, l in enumerate(levels_order)}
     # Separate active players from released
     active_players  = [p for p in player_data if p["level"] != "Released"]
     released_players = [p for p in player_data if p["level"] == "Released"]
     def sort_level(p):
         lvl = p["level"]
-        if lvl in ("60-Day IL", "7-Day IL"):
+        if lvl in ("60-Day IL", "7-Day IL", "Full Season IL"):
             return level_rank.get(p.get("base_level") or lvl, 99)
         return level_rank.get(lvl, 99)
     sorted_players = sorted(active_players, key=sort_level)
@@ -648,6 +649,7 @@ def generate_html(player_data: list[dict], news_html: str = ""):
         "Independent": "#5a5a5a",  # Neutral gray
         "60-Day IL":   "#8B4513",  # Brown/rust
         "7-Day IL":    "#8B4513",  # Brown/rust
+        "Full Season IL": "#8B4513",  # Brown/rust
         "Released":    "#999999",  # Light gray
     }
     light_levels = {"AA"}  # light backgrounds need dark text
@@ -687,7 +689,7 @@ def generate_html(player_data: list[dict], news_html: str = ""):
         stats    = p.get("stats_fmt", {})
         lvl      = p["level"]
         base_lvl = p.get("base_level", "") or lvl
-        badge_lvl = base_lvl if lvl in ("60-Day IL", "7-Day IL") else lvl
+        badge_lvl = base_lvl if lvl in ("60-Day IL", "7-Day IL", "Full Season IL") else lvl
         color    = level_colors.get(badge_lvl, "#555")
         txt      = "#333" if badge_lvl in light_levels else "white"
         pitcher = is_pitcher(p["position"])
@@ -741,7 +743,7 @@ def generate_html(player_data: list[dict], news_html: str = ""):
         il_badge = (f'<span style="display:inline-block;background:#8B4513;color:white;'
                     f'font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:10px;'
                     f'margin-left:6px;vertical-align:middle;">{lvl}</span>'
-                    if lvl in ("60-Day IL", "7-Day IL") else "")
+                    if lvl in ("60-Day IL", "7-Day IL", "Full Season IL") else "")
 
         return f'''
         <div class="card" data-level="{lvl}" data-name="{p["name"].lower()}" onclick="openModal({idx})" style="cursor:pointer">
@@ -780,7 +782,7 @@ def generate_html(player_data: list[dict], news_html: str = ""):
         il_tag = (f'<span style="display:inline-block;background:#8B4513;color:white;'
                   f'font-size:0.6rem;font-weight:700;padding:1px 6px;border-radius:8px;'
                   f'margin-left:5px;vertical-align:middle;">{lvl}</span>'
-                  if lvl in ("60-Day IL", "7-Day IL") else "")
+                  if lvl in ("60-Day IL", "7-Day IL", "Full Season IL") else "")
         name_link = f'<a href="{p["milb_url"]}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">{p["name"]}</a>' if p.get("milb_url") else p["name"]
         return f'''
         <tr data-level="{lvl}" data-name="{p["name"].lower()}">
