@@ -50,6 +50,13 @@ HEADERS = {"User-Agent": "BeyondHowser/1.0"}
 # Used when the MLB Stats API is unreachable or hasn't indexed a player yet.
 # Live API stats will overwrite these when available.
 MANUAL_STATS: dict[str, dict] = {
+    "Drew Faurot": {
+        "hitting": {
+            "gamesPlayed": 3, "atBats": 8, "hits": 1, "avg": ".125",
+            "homeRuns": 0, "rbi": 3, "runs": 2, "stolenBases": 2,
+            "obp": ".300", "slg": ".125", "ops": ".425",
+        }
+    },
     "Joe Charles": {
         "pitching": {
             "gamesPlayed": 4, "gamesStarted": 0, "wins": 0, "losses": 0,
