@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Support FSU Baseball — Beyond Howser</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="shortcut icon" type="image/png" href="logo.png">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4259331118703482" crossorigin="anonymous"></script>
+<style>
+:root {
+  --garnet: #782F40; --garnet-dark: #5a1f2d; --garnet-light: #9e4055;
+  --gold: #CEB888;   --gold-light: #e8d9b0;  --gold-dark: #a8955e;
+  --cream: #FAF7F2;  --border: #e0d8d0;
+  --shadow: 0 2px 12px rgba(120,47,64,0.10);
+}
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--cream); color: #1a1a1a; line-height: 1.5; }
+
+/* ── Nav ── */
+nav { background: var(--garnet); padding: 0 32px; display: flex; align-items: center;
+       justify-content: space-between; position: sticky; top: 0; z-index: 100;
+       box-shadow: 0 2px 8px rgba(0,0,0,0.25); }
+.nav-brand { display: flex; align-items: center; gap: 10px; padding: 14px 0; text-decoration: none; }
+.nav-logo { width: 42px; height: 42px; border-radius: 6px; flex-shrink: 0; object-fit: cover; display: block; }
+.nav-title { color: white; font-weight: 700; font-size: 1.1rem; }
+.nav-sub   { color: var(--gold); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.nav-links { display: flex; gap: 2px; margin: 0 24px; }
+.nav-links a { color: rgba(255,255,255,0.8); text-decoration: none; padding: 8px 14px;
+                border-radius: 6px; font-size: 0.88rem; transition: all 0.15s; white-space: nowrap; }
+.nav-links a:hover { background: rgba(255,255,255,0.12); color: white; }
+.nav-links a.active { background: rgba(206,184,136,0.2); color: var(--gold); font-weight: 600; }
+
+/* ── Hero ── */
+.hero { background: linear-gradient(135deg, var(--garnet-dark) 0%, var(--garnet) 55%, var(--garnet-light) 100%);
+         padding: 56px 32px 48px; text-align: center; position: relative; overflow: hidden; }
+.hero::before { content:''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(45deg, transparent, transparent 40px,
+    rgba(206,184,136,0.04) 40px, rgba(206,184,136,0.04) 80px); }
+.hero-content { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
+.hero-eyebrow { display: inline-block; background: rgba(206,184,136,0.2);
+  border: 1px solid rgba(206,184,136,0.4); color: var(--gold);
+  font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 4px 14px; border-radius: 20px; margin-bottom: 16px; }
+.hero h1 { color: white; font-size: 2.2rem; font-weight: 800; line-height: 1.15; margin-bottom: 16px; }
+.hero h1 span { color: var(--gold); }
+.hero-sub { color: rgba(255,255,255,0.75); font-size: 1rem; max-width: 560px; margin: 0 auto 28px; line-height: 1.6; }
+.btn-donate-hero { display: inline-block; background: var(--gold); color: var(--garnet-dark);
+  font-weight: 800; font-size: 1.05rem; padding: 14px 36px; border-radius: 8px;
+  text-decoration: none; letter-spacing: 0.03em; transition: all 0.2s;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25); }
+.btn-donate-hero:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+
+/* ── Page body ── */
+.page-wrap { max-width: 900px; margin: 0 auto; padding: 48px 32px 64px; }
+
+/* ── What is the Coaches Club ── */
+.card { background: white; border: 1px solid var(--border); border-radius: 12px;
+         padding: 32px 36px; box-shadow: var(--shadow); margin-bottom: 32px; }
+.card-title { font-size: 1.25rem; font-weight: 700; color: var(--garnet);
+               border-left: 4px solid var(--gold); padding-left: 12px; margin-bottom: 18px; }
+.card p { color: #444; font-size: 0.95rem; line-height: 1.75; margin-bottom: 14px; }
+.card p:last-child { margin-bottom: 0; }
+.card strong { color: var(--garnet); }
+
+/* ── Membership levels ── */
+.levels-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; margin-top: 20px; }
+.level-card { border-radius: 10px; padding: 20px 18px; text-align: center; border: 2px solid transparent; transition: transform 0.15s; }
+.level-card:hover { transform: translateY(-3px); }
+.level-card .level-name { font-weight: 800; font-size: 1rem; margin-bottom: 4px; }
+.level-card .level-amt  { font-size: 1.4rem; font-weight: 800; margin-bottom: 10px; }
+.level-card .level-desc { font-size: 0.78rem; line-height: 1.5; opacity: 0.85; }
+
+.level-seminole  { background: #f5f0ea; border-color: var(--gold);      color: var(--garnet-dark); }
+.level-garnet    { background: var(--garnet); border-color: var(--garnet-dark); color: white; }
+.level-gold      { background: #4a3a10; border-color: var(--gold-dark); color: var(--gold-light); }
+.level-champion  { background: var(--garnet-dark); border-color: var(--gold); color: white; }
+.level-champion .level-amt { color: var(--gold); }
+.level-gold .level-amt { color: var(--gold); }
+.level-garnet .level-amt { color: var(--gold-light); }
+.level-seminole .level-amt { color: var(--garnet); }
+
+/* ── Benefits image ── */
+.benefits-img-wrap { text-align: center; margin-top: 20px; }
+.benefits-img-wrap img { max-width: 100%; border-radius: 8px; border: 1px solid var(--border);
+  box-shadow: var(--shadow); }
+.benefits-caption { font-size: 0.78rem; color: #999; margin-top: 8px; }
+
+/* ── CTA strip ── */
+.cta-strip { background: linear-gradient(135deg, var(--garnet-dark), var(--garnet));
+              border-radius: 12px; padding: 36px 32px; text-align: center; margin-bottom: 32px; }
+.cta-strip h2 { color: white; font-size: 1.4rem; font-weight: 800; margin-bottom: 10px; }
+.cta-strip p  { color: rgba(255,255,255,0.75); font-size: 0.92rem; margin-bottom: 24px; max-width: 520px; margin-left: auto; margin-right: auto; }
+.btn-donate { display: inline-block; background: var(--gold); color: var(--garnet-dark);
+  font-weight: 800; font-size: 1rem; padding: 13px 32px; border-radius: 8px;
+  text-decoration: none; letter-spacing: 0.03em; transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
+.btn-donate:hover { background: var(--gold-light); transform: translateY(-2px); }
+.btn-secondary { display: inline-block; background: transparent;
+  border: 2px solid rgba(206,184,136,0.5); color: var(--gold);
+  font-weight: 600; font-size: 0.88rem; padding: 11px 24px; border-radius: 8px;
+  text-decoration: none; margin-left: 12px; transition: all 0.2s; }
+.btn-secondary:hover { background: rgba(206,184,136,0.1); border-color: var(--gold); }
+
+/* ── Footer ── */
+footer { background: var(--garnet-dark); color: rgba(255,255,255,0.6);
+          text-align: center; padding: 28px 32px; font-size: 0.8rem; }
+footer a { color: var(--gold); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .hero h1 { font-size: 1.6rem; }
+  .page-wrap { padding: 32px 16px 48px; }
+  .card { padding: 22px 20px; }
+  .nav-links { display: none; }
+  .levels-grid { grid-template-columns: repeat(2, 1fr); }
+  .btn-secondary { display: block; margin: 12px auto 0; width: fit-content; }
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <a href="index.html" class="nav-brand">
+    <img class="nav-logo" src="logo.png" alt="Beyond Howser">
+    <div>
+      <div class="nav-title">Beyond Howser</div>
+      <div class="nav-sub">FSU Baseball Alumni Tracker</div>
+    </div>
+  </a>
+  <div class="nav-links">
+    <a href="index.html" class="nav-links">Home</a>
+    <a href="index.html#roster" class="nav-links">Roster</a>
+    <a href="index.html#news" class="nav-links">News</a>
+    <a href="index.html#about" class="nav-links">About</a>
+    <a href="support.html" class="nav-links active">Support FSU Baseball</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-eyebrow">🍢 FSU Baseball Coaches Club</div>
+    <h1>Support <span>Florida State Baseball</span></h1>
+    <p class="hero-sub">The players we track on this site got their start at Florida State. Help make sure the next generation of Noles has every resource they need to reach the pros.</p>
+    <a href="https://www.givecampus.com/campaigns/25593/donations/new?amt=1000.00" target="_blank" rel="noopener" class="btn-donate-hero">Donate to FSU Baseball Now</a>
+  </div>
+</div>
+
+<div class="page-wrap">
+
+  <!-- What is the Coaches Club -->
+  <div class="card">
+    <div class="card-title">What is the FSU Baseball Coaches Club?</div>
+    <p>The <strong>FSU Baseball Coaches Club</strong> is the primary booster organization dedicated to supporting Florida State University baseball. Membership contributions go directly toward resources that give Nole student-athletes a competitive edge — from recruiting budgets and travel costs to facility improvements and player development programs.</p>
+    <p>Every dollar raised through the Coaches Club helps Coach Link and his staff attract top talent, retain elite coaches, and build the kind of program that produces the professional players you see on this site year after year.</p>
+    <p>Coaches Club members receive exclusive benefits including behind-the-scenes access, priority seating, and recognition throughout the program — depending on your membership level. Your support is tax-deductible through the Seminole Boosters.</p>
+  </div>
+
+  <!-- Membership Levels -->
+  <div class="card">
+    <div class="card-title">Membership Levels & Benefits</div>
+    <p>Choose a level that works for you. Every level of support makes a real difference to the program.</p>
+
+    <div class="levels-grid">
+      <div class="level-card level-seminole">
+        <div class="level-name">Seminole</div>
+        <div class="level-amt">$250</div>
+        <div class="level-desc">Entry-level membership with recognition and program updates</div>
+      </div>
+      <div class="level-card level-garnet">
+        <div class="level-name">Garnet</div>
+        <div class="level-amt">$500</div>
+        <div class="level-desc">Priority access and exclusive Coaches Club communications</div>
+      </div>
+      <div class="level-card level-gold">
+        <div class="level-name">Gold</div>
+        <div class="level-amt">$1,000</div>
+        <div class="level-desc">Premium benefits including invites to team events and meet-the-coaches access</div>
+      </div>
+      <div class="level-card level-champion">
+        <div class="level-name">Champion</div>
+        <div class="level-amt">$2,500+</div>
+        <div class="level-desc">Top-tier recognition, VIP experiences, and maximum impact on the program</div>
+      </div>
+    </div>
+
+    <div class="benefits-img-wrap" style="margin-top: 28px;">
+      <img src="https://boosters.fsu.edu/wp-content/uploads/2025/08/2025-Coaches-Clubs_Benefits_Baseball_web.jpg"
+           alt="FSU Baseball Coaches Club Membership Benefits Chart"
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <p style="display:none; color:#999; font-size:0.85rem; margin-top:12px;">
+        Full benefits chart available at <a href="https://boosters.fsu.edu" target="_blank" rel="noopener">boosters.fsu.edu</a>
+      </p>
+      <p class="benefits-caption">Full membership benefits as provided by Seminole Boosters (2025–26)</p>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-strip">
+    <h2>Ready to Make an Impact?</h2>
+    <p>Join the Coaches Club today and be part of what makes Florida State Baseball one of the premier programs in the country.</p>
+    <a href="https://www.givecampus.com/campaigns/25593/donations/new?amt=1000.00" target="_blank" rel="noopener" class="btn-donate">Donate Now</a>
+    <a href="https://boosters.fsu.edu" target="_blank" rel="noopener" class="btn-secondary">Learn More at Seminole Boosters</a>
+  </div>
+
+  <!-- Why it matters -->
+  <div class="card">
+    <div class="card-title">Why FSU Baseball Alumni Are Worth Tracking</div>
+    <p>Florida State has produced more professional baseball players than almost any other program in the country. The alumni you see on Beyond Howser — from Cal Raleigh behind the plate in Seattle to Jamie Arnold dominating Double-A hitters — got their start wearing the Garnet &amp; Gold.</p>
+    <p>That pipeline doesn't happen by accident. It takes investment, coaching, and a culture of winning. The Coaches Club is one of the most direct ways fans can contribute to keeping that pipeline flowing.</p>
+    <p style="font-size: 0.82rem; color: #999; margin-top: 18px;">
+      <em>Note: Beyond Howser is a fan-operated site and is not affiliated with Florida State University or Seminole Boosters. Donation links go directly to the official FSU giving platform.</em>
+    </p>
+  </div>
+
+</div>
+
+<footer>
+  <p><a href="index.html">← Back to Beyond Howser</a> &nbsp;·&nbsp; <a href="https://boosters.fsu.edu" target="_blank" rel="noopener">Seminole Boosters</a> &nbsp;·&nbsp; <a href="https://www.givecampus.com/campaigns/25593/donations/new?amt=1000.00" target="_blank" rel="noopener">Donate to FSU Baseball</a></p>
+  <p style="margin-top: 8px;">Beyond Howser is a fan site. Not affiliated with FSU or Seminole Boosters.</p>
+</footer>
+
+</body>
+</html>
