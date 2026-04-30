@@ -80,7 +80,16 @@ nav { background: var(--garnet); padding: 0 32px; display: flex; align-items: ce
 .perf-card:hover { transform: translateY(-2px); }
 .perf-card.notable { border-left-color: var(--gold-dark); background: #fffdf7; }
 
-.perf-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+.perf-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; gap: 10px; }
+.perf-header-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+.perf-photo { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
+               border: 2px solid var(--border); background: var(--cream); }
+.perf-photo-initials { width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
+                         background: var(--garnet); color: white; font-weight: 800; font-size: 1rem;
+                         display: flex; align-items: center; justify-content: center;
+                         border: 2px solid var(--garnet-dark); }
+.perf-card.notable .perf-photo { border-color: var(--gold); }
+.perf-card.notable .perf-photo-initials { background: var(--gold-dark); }
 .perf-name { font-weight: 700; font-size: 1rem; color: var(--garnet); }
 .perf-team { font-size: 0.75rem; color: #888; margin-top: 2px; }
 .perf-lvl-tag { font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
@@ -367,11 +376,19 @@ function buildCard({ player, headers, row, isPitcher, notable }) {
 
   const notableHtml = notable ? `<div class="notable-flag">⭐ Notable</div>` : '';
 
+  const photoHtml = player.photo
+    ? `<img class="perf-photo" src="${player.photo}" alt="${player.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+       <div class="perf-photo-initials" style="display:none;">${player.initials || '??'}</div>`
+    : `<div class="perf-photo-initials">${player.initials || '??'}</div>`;
+
   card.innerHTML = `
     <div class="perf-header">
-      <div>
-        <div class="perf-name">${player.name}</div>
-        <div class="perf-team">${player.posTeam}</div>
+      <div class="perf-header-left">
+        ${photoHtml}
+        <div>
+          <div class="perf-name">${player.name}</div>
+          <div class="perf-team">${player.posTeam}</div>
+        </div>
       </div>
       <span class="perf-lvl-tag ${lvlClass}">${player.lvl}</span>
     </div>
