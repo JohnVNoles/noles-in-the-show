@@ -139,11 +139,32 @@ footer { background: var(--garnet-dark); color: rgba(255,255,255,0.55);
           text-align: center; padding: 28px 32px; font-size: 0.8rem; }
 footer a { color: var(--gold); text-decoration: none; }
 
+/* ── Hamburger ── */
+.nav-hamburger { display: none; background: none; border: none; cursor: pointer;
+  padding: 8px; margin-left: auto; color: white; flex-direction: column;
+  justify-content: center; align-items: center; gap: 5px; }
+.nav-hamburger span { display: block; width: 22px; height: 2px; background: white;
+  border-radius: 2px; transition: all 0.25s; }
+.nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav-hamburger.open span:nth-child(2) { opacity: 0; }
+.nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+.nav-mobile-menu { display: none; position: absolute; top: 100%; left: 0; right: 0;
+  background: var(--garnet-dark); border-top: 2px solid var(--gold);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.35); z-index: 200; }
+.nav-mobile-menu a { display: block; color: rgba(255,255,255,0.85); text-decoration: none;
+  padding: 14px 20px; font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.07);
+  transition: background 0.15s; }
+.nav-mobile-menu a:last-child { border-bottom: none; }
+.nav-mobile-menu a:hover { background: rgba(255,255,255,0.08); }
+.nav-mobile-menu a.gold-link { color: var(--gold); font-weight: 600; }
+
 /* ── Responsive ── */
 @media (max-width: 640px) {
   .hero h1 { font-size: 1.5rem; }
   .page-wrap { padding: 24px 16px 48px; }
   .nav-links { display: none; }
+  .nav-hamburger { display: flex; }
+  .nav-mobile-menu.open { display: block; width: 100%; }
   .perf-grid { grid-template-columns: 1fr; }
   .summary-strip { gap: 8px; }
   .summary-stat { border-right: none; padding: 6px 12px; }
@@ -154,7 +175,7 @@ footer a { color: var(--gold); text-decoration: none; }
 <body>
 
 <!-- Nav -->
-<nav>
+<nav style="position:relative; flex-wrap:wrap;">
   <a href="index.html" class="nav-brand">
     <img class="nav-logo" src="logo.png" alt="Beyond Howser">
     <div>
@@ -169,6 +190,17 @@ footer a { color: var(--gold); text-decoration: none; }
     <a href="index.html#about">About</a>
     <a href="yesterday.html" class="active">Previous Day's Performance</a>
     <a href="support.html" style="color:var(--gold);font-weight:600;">Support FSU Baseball</a>
+  </div>
+  <button class="nav-hamburger" id="navHamburger" aria-label="Open menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-mobile-menu" id="navMobileMenu">
+    <a href="index.html">Home</a>
+    <a href="index.html#roster">Roster</a>
+    <a href="index.html#news">News</a>
+    <a href="index.html#about">About</a>
+    <a href="yesterday.html" class="active">Previous Day's Performance</a>
+    <a href="support.html" class="gold-link">Support FSU Baseball</a>
   </div>
 </nav>
 
@@ -414,6 +446,25 @@ if (window.YESTERDAY_DATA) {
 } else {
   document.getElementById('content-area').innerHTML = '<div class="no-games"><h3>Data file not found</h3><p>Make sure yesterday_data.js is present.</p></div>';
 }
+
+// ── Hamburger menu ──
+(function() {
+  const btn = document.getElementById('navHamburger');
+  const menu = document.getElementById('navMobileMenu');
+  if (!btn || !menu) return;
+  btn.addEventListener('click', function() {
+    const isOpen = menu.classList.toggle('open');
+    btn.classList.toggle('open', isOpen);
+    btn.setAttribute('aria-expanded', isOpen);
+  });
+  menu.querySelectorAll('a').forEach(function(a) {
+    a.addEventListener('click', function() {
+      menu.classList.remove('open');
+      btn.classList.remove('open');
+      btn.setAttribute('aria-expanded', false);
+    });
+  });
+})();
 </script>
 </body>
 </html>
