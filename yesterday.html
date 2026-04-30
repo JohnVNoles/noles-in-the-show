@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Previous Day's Performances — Beyond Howser</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="shortcut icon" type="image/png" href="logo.png">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4259331118703482" crossorigin="anonymous"></script>
+<style>
+:root {
+  --garnet: #782F40; --garnet-dark: #5a1f2d; --garnet-light: #9e4055;
+  --gold: #CEB888;   --gold-light: #e8d9b0;  --gold-dark: #a8955e;
+  --cream: #FAF7F2;  --border: #e0d8d0;
+  --shadow: 0 2px 12px rgba(120,47,64,0.10);
+}
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--cream); color: #1a1a1a; line-height: 1.5; }
+
+/* ── Nav ── */
+nav { background: var(--garnet); padding: 0 32px; display: flex; align-items: center;
+       justify-content: space-between; position: sticky; top: 0; z-index: 100;
+       box-shadow: 0 2px 8px rgba(0,0,0,0.25); }
+.nav-brand { display: flex; align-items: center; gap: 10px; padding: 14px 0; text-decoration: none; }
+.nav-logo { width: 42px; height: 42px; border-radius: 6px; flex-shrink: 0; object-fit: cover; display: block; }
+.nav-title { color: white; font-weight: 700; font-size: 1.1rem; }
+.nav-sub   { color: var(--gold); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.nav-links { display: flex; gap: 2px; margin: 0 24px; }
+.nav-links a { color: rgba(255,255,255,0.8); text-decoration: none; padding: 8px 14px;
+                border-radius: 6px; font-size: 0.88rem; transition: all 0.15s; white-space: nowrap; }
+.nav-links a:hover { background: rgba(255,255,255,0.12); color: white; }
+.nav-links a.active { background: rgba(206,184,136,0.2); color: var(--gold); font-weight: 600; }
+
+/* ── Hero ── */
+.hero { background: linear-gradient(135deg, var(--garnet-dark) 0%, var(--garnet) 55%, var(--garnet-light) 100%);
+         padding: 40px 32px 36px; text-align: center; position: relative; overflow: hidden; }
+.hero::before { content:''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(45deg, transparent, transparent 40px,
+    rgba(206,184,136,0.04) 40px, rgba(206,184,136,0.04) 80px); }
+.hero-content { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
+.hero-eyebrow { display: inline-block; background: rgba(206,184,136,0.2);
+  border: 1px solid rgba(206,184,136,0.4); color: var(--gold);
+  font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 4px 14px; border-radius: 20px; margin-bottom: 14px; }
+.hero h1 { color: white; font-size: 2rem; font-weight: 800; line-height: 1.15; margin-bottom: 8px; }
+.hero h1 span { color: var(--gold); }
+.hero-date { color: rgba(255,255,255,0.65); font-size: 0.88rem; margin-top: 6px; }
+
+/* ── Date nav ── */
+.date-nav { background: white; border-bottom: 1px solid var(--border);
+             padding: 10px 32px; display: flex; align-items: center; gap: 12px; justify-content: center; }
+.date-btn { background: none; border: 1px solid var(--border); border-radius: 6px;
+             padding: 5px 14px; font-size: 0.82rem; cursor: pointer; color: var(--garnet);
+             font-weight: 600; transition: all 0.15s; }
+.date-btn:hover { background: var(--garnet); color: white; border-color: var(--garnet); }
+.date-btn.active { background: var(--garnet); color: white; border-color: var(--garnet); }
+.date-label { font-size: 0.9rem; color: #666; font-weight: 600; min-width: 120px; text-align: center; }
+
+/* ── Page body ── */
+.page-wrap { max-width: 1100px; margin: 0 auto; padding: 36px 32px 64px; }
+
+/* ── Section headers ── */
+.level-section { margin-bottom: 40px; }
+.level-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.level-badge { display: inline-block; padding: 4px 14px; border-radius: 20px;
+                font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em;
+                text-transform: uppercase; color: white; }
+.level-badge.mlb  { background: var(--garnet); }
+.level-badge.milb { background: #4A7C59; }
+.level-title { font-size: 1.15rem; font-weight: 700; color: #1a1a1a; }
+.level-count { font-size: 0.8rem; color: #999; }
+
+/* ── Performance cards ── */
+.perf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+
+.perf-card { background: white; border: 1px solid var(--border); border-radius: 10px;
+              padding: 16px 18px; box-shadow: var(--shadow);
+              border-left: 4px solid var(--garnet); transition: transform 0.1s; }
+.perf-card:hover { transform: translateY(-2px); }
+.perf-card.notable { border-left-color: var(--gold-dark); background: #fffdf7; }
+
+.perf-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+.perf-name { font-weight: 700; font-size: 1rem; color: var(--garnet); }
+.perf-team { font-size: 0.75rem; color: #888; margin-top: 2px; }
+.perf-lvl-tag { font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+                  letter-spacing: 0.06em; padding: 2px 8px; border-radius: 10px;
+                  background: var(--garnet); color: white; white-space: nowrap; flex-shrink: 0; }
+.perf-lvl-tag.aa   { background: #CEB888; color: #333; }
+.perf-lvl-tag.aaa  { background: #B5451B; }
+.perf-lvl-tag.high-a { background: #4A7C59; }
+.perf-lvl-tag.low-a  { background: #2C5F8A; }
+
+.perf-stats { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.stat-pill { background: var(--cream); border: 1px solid var(--border);
+              border-radius: 6px; padding: 4px 10px; font-size: 0.8rem;
+              display: flex; flex-direction: column; align-items: center; min-width: 44px; }
+.stat-pill .sv { font-weight: 800; font-size: 1rem; color: #1a1a1a; line-height: 1.1; }
+.stat-pill .sl { font-size: 0.62rem; color: #999; text-transform: uppercase; letter-spacing: 0.04em; }
+.stat-pill.highlight .sv { color: var(--garnet); }
+.stat-pill.gold .sv { color: var(--gold-dark); }
+
+.perf-opp { font-size: 0.75rem; color: #aaa; }
+
+/* ── Notable flag ── */
+.notable-flag { display: inline-flex; align-items: center; gap: 4px;
+                  background: var(--gold-light); color: var(--gold-dark);
+                  font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+                  letter-spacing: 0.06em; padding: 2px 8px; border-radius: 10px;
+                  margin-top: 6px; }
+
+/* ── No games message ── */
+.no-games { text-align: center; padding: 48px 24px; color: #999;
+             background: white; border-radius: 10px; border: 1px solid var(--border); }
+.no-games h3 { color: #ccc; font-size: 1.1rem; margin-bottom: 8px; }
+
+/* ── Summary strip ── */
+.summary-strip { background: var(--garnet-dark); border-radius: 10px;
+                  padding: 20px 28px; margin-bottom: 32px;
+                  display: flex; gap: 0; flex-wrap: wrap; justify-content: space-around; }
+.summary-stat { text-align: center; padding: 8px 20px;
+                  border-right: 1px solid rgba(206,184,136,0.2); }
+.summary-stat:last-child { border-right: none; }
+.summary-stat .num { color: var(--gold); font-size: 1.8rem; font-weight: 800; line-height: 1; }
+.summary-stat .lbl { color: rgba(255,255,255,0.6); font-size: 0.7rem;
+                       text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; }
+
+/* ── Footer ── */
+footer { background: var(--garnet-dark); color: rgba(255,255,255,0.55);
+          text-align: center; padding: 28px 32px; font-size: 0.8rem; }
+footer a { color: var(--gold); text-decoration: none; }
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .hero h1 { font-size: 1.5rem; }
+  .page-wrap { padding: 24px 16px 48px; }
+  .nav-links { display: none; }
+  .perf-grid { grid-template-columns: 1fr; }
+  .summary-strip { gap: 8px; }
+  .summary-stat { border-right: none; padding: 6px 12px; }
+  .date-nav { padding: 10px 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <a href="index.html" class="nav-brand">
+    <img class="nav-logo" src="logo.png" alt="Beyond Howser">
+    <div>
+      <div class="nav-title">Beyond Howser</div>
+      <div class="nav-sub">FSU Baseball Alumni Tracker</div>
+    </div>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="index.html#roster">Roster</a>
+    <a href="index.html#news">News</a>
+    <a href="index.html#about">About</a>
+    <a href="yesterday.html" class="active">Previous Day's Performances</a>
+    <a href="support.html" style="color:var(--gold);font-weight:600;">Support FSU Baseball</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-eyebrow">FSU Alumni · MLB &amp; MiLB</div>
+    <h1>Previous Day's <span>Performances</span></h1>
+    <p class="hero-date" id="hero-date">Loading...</p>
+  </div>
+</div>
+
+<!-- Date nav -->
+<div class="date-nav">
+  <button class="date-btn" id="btn-prev" onclick="shiftDate(-1)">← Earlier</button>
+  <span class="date-label" id="date-label">—</span>
+  <button class="date-btn" id="btn-next" onclick="shiftDate(1)" disabled>Later →</button>
+</div>
+
+<div class="page-wrap">
+  <!-- Summary strip -->
+  <div class="summary-strip" id="summary-strip" style="display:none;">
+    <div class="summary-stat"><div class="num" id="sum-players">0</div><div class="lbl">Players Active</div></div>
+    <div class="summary-stat"><div class="num" id="sum-hr">0</div><div class="lbl">Home Runs</div></div>
+    <div class="summary-stat"><div class="num" id="sum-rbi">0</div><div class="lbl">RBI</div></div>
+    <div class="summary-stat"><div class="num" id="sum-k">0</div><div class="lbl">Strikeouts (P)</div></div>
+    <div class="summary-stat"><div class="num" id="sum-notable">0</div><div class="lbl">Notable Performances</div></div>
+  </div>
+
+  <div id="content-area"></div>
+</div>
+
+<footer>
+  <p><a href="index.html">← Back to Beyond Howser</a> &nbsp;·&nbsp; <a href="support.html">Support FSU Baseball</a> &nbsp;·&nbsp; <a href="https://twitter.com/BeyondHowser" target="_blank" rel="noopener">𝕏 @BeyondHowser</a></p>
+  <p style="margin-top:8px;">Stats via MLB Stats API. Updated daily. Beyond Howser is a fan site not affiliated with FSU or MLB.</p>
+</footer>
+
+<!-- Load MODAL_DATA from main site -->
+<script src="yesterday_data.js"></script>
+<script>
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function parseGameLog(html) {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  const headers = [...div.querySelectorAll('thead th')].map(th => th.textContent.trim());
+  const rows = [...div.querySelectorAll('tbody tr')].map(tr =>
+    [...tr.querySelectorAll('td')].map(td => td.textContent.trim())
+  );
+  return { headers, rows };
+}
+
+function formatDateDisplay(dateStr) {
+  // dateStr = "04-28-2026"
+  const [m, d, y] = dateStr.split('-');
+  const dt = new Date(+y, +m - 1, +d);
+  return dt.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+}
+
+function isNotable(headers, row, isPitcher) {
+  const get = (label) => {
+    const i = headers.indexOf(label);
+    return i >= 0 ? (parseFloat(row[i]) || 0) : 0;
+  };
+  if (isPitcher) {
+    return get('K') >= 7 || (parseFloat(row[headers.indexOf('IP')] || 0) >= 6 && get('ER') <= 3);
+  } else {
+    return get('HR') >= 1 || get('H') >= 3 || get('RBI') >= 4;
+  }
+}
+
+function getLvlClass(lvl) {
+  if (!lvl) return '';
+  const l = lvl.toLowerCase();
+  if (l === 'mlb') return 'mlb';
+  if (l === 'aaa') return 'aaa';
+  if (l === 'aa') return 'aa';
+  if (l.includes('high')) return 'high-a';
+  if (l.includes('low') || l.includes('a')) return 'low-a';
+  return '';
+}
+
+// ── All available dates ───────────────────────────────────────────────────────
+let allDates = [];
+let currentDateIdx = 0;
+
+function collectDates() {
+  const dateSet = new Set();
+  (window.YESTERDAY_DATA || []).forEach(p => {
+    const { rows } = parseGameLog(p.gameLogHtml);
+    rows.forEach(r => { if (r[0]) dateSet.add(r[0]); });
+  });
+  allDates = [...dateSet].sort((a, b) => b.localeCompare(a)); // newest first
+  currentDateIdx = 0;
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render(dateStr) {
+  const isMostRecent = currentDateIdx === 0;
+  document.getElementById('hero-date').textContent = formatDateDisplay(dateStr);
+  document.getElementById('date-label').textContent = isMostRecent
+    ? 'Most Recent Day' : formatDateDisplay(dateStr).split(',')[0] + ', ' + formatDateDisplay(dateStr).split(',').slice(1).join(',').trim();
+  document.getElementById('btn-next').disabled = currentDateIdx === 0;
+  document.getElementById('btn-prev').disabled = currentDateIdx >= allDates.length - 1;
+
+  const players = (window.YESTERDAY_DATA || []);
+  const mlbPerfs = [], milbPerfs = [];
+  let totalHR = 0, totalRBI = 0, totalK = 0, totalNotable = 0;
+
+  players.forEach(p => {
+    const { headers, rows } = parseGameLog(p.gameLogHtml);
+    const matchRow = rows.find(r => r[0] === dateStr);
+    if (!matchRow) return;
+
+    const isPitcher = headers.includes('IP');
+    const notable = isNotable(headers, matchRow, isPitcher);
+
+    // Accumulate summary stats
+    const getVal = (label) => { const i = headers.indexOf(label); return i >= 0 ? (parseFloat(matchRow[i]) || 0) : 0; };
+    totalHR  += getVal('HR');
+    totalRBI += getVal('RBI');
+    totalK   += isPitcher ? getVal('K') : 0;
+    if (notable) totalNotable++;
+
+    const perf = { player: p, headers, row: matchRow, isPitcher, notable };
+    if (p.lvl === 'MLB') mlbPerfs.push(perf);
+    else milbPerfs.push(perf);
+  });
+
+  // Summary strip
+  const strip = document.getElementById('summary-strip');
+  const total = mlbPerfs.length + milbPerfs.length;
+  if (total > 0) {
+    strip.style.display = 'flex';
+    document.getElementById('sum-players').textContent = total;
+    document.getElementById('sum-hr').textContent = totalHR;
+    document.getElementById('sum-rbi').textContent = totalRBI;
+    document.getElementById('sum-k').textContent = totalK;
+    document.getElementById('sum-notable').textContent = totalNotable;
+  } else {
+    strip.style.display = 'none';
+  }
+
+  // Sort: notable first
+  const sortPerfs = arr => arr.sort((a, b) => b.notable - a.notable);
+  sortPerfs(mlbPerfs);
+  sortPerfs(milbPerfs);
+
+  const content = document.getElementById('content-area');
+  content.innerHTML = '';
+
+  if (total === 0) {
+    content.innerHTML = `<div class="no-games"><h3>No performances recorded</h3><p>No FSU alumni had game data logged for this date.</p></div>`;
+    return;
+  }
+
+  if (mlbPerfs.length) content.appendChild(buildSection('MLB', mlbPerfs, 'mlb'));
+  if (milbPerfs.length) content.appendChild(buildSection('Minor Leagues', milbPerfs, 'milb'));
+}
+
+function buildSection(title, perfs, badgeClass) {
+  const section = document.createElement('div');
+  section.className = 'level-section';
+  section.innerHTML = `
+    <div class="level-header">
+      <span class="level-badge ${badgeClass}">${title}</span>
+      <span class="level-title">${title === 'MLB' ? 'Major League Performances' : 'Minor League Performances'}</span>
+      <span class="level-count">${perfs.length} player${perfs.length !== 1 ? 's' : ''}</span>
+    </div>
+    <div class="perf-grid" id="grid-${badgeClass}"></div>
+  `;
+  const grid = section.querySelector('.perf-grid');
+  perfs.forEach(perf => grid.appendChild(buildCard(perf)));
+  return section;
+}
+
+function buildCard({ player, headers, row, isPitcher, notable }) {
+  const card = document.createElement('div');
+  card.className = 'perf-card' + (notable ? ' notable' : '');
+
+  const opp = row[1] || '';
+  const lvlClass = getLvlClass(player.lvl);
+
+  // Build stat pills
+  const statLabels = isPitcher
+    ? ['IP','H','ER','BB','K']
+    : ['AB','H','HR','RBI','BB','SB'];
+
+  let pillsHtml = statLabels.map(lbl => {
+    const i = headers.indexOf(lbl);
+    if (i < 0) return '';
+    const val = row[i] || '0';
+    const isKey = isPitcher ? lbl === 'K' : (lbl === 'HR' || lbl === 'H');
+    const isGold = isPitcher ? lbl === 'IP' : lbl === 'RBI';
+    const cls = isKey ? 'stat-pill highlight' : isGold ? 'stat-pill gold' : 'stat-pill';
+    return `<div class="${cls}"><span class="sv">${val}</span><span class="sl">${lbl}</span></div>`;
+  }).join('');
+
+  // Result/decision
+  const resultIdx = headers.indexOf('RESULT') >= 0 ? headers.indexOf('RESULT') : -1;
+  const resultVal = resultIdx >= 0 ? row[resultIdx] : '';
+  if (resultVal) {
+    const rClass = resultVal === 'W' ? 'stat-pill highlight' : resultVal === 'L' ? 'stat-pill' : 'stat-pill';
+    pillsHtml += `<div class="${rClass}"><span class="sv">${resultVal}</span><span class="sl">DEC</span></div>`;
+  }
+
+  const notableHtml = notable ? `<div class="notable-flag">⭐ Notable</div>` : '';
+
+  card.innerHTML = `
+    <div class="perf-header">
+      <div>
+        <div class="perf-name">${player.name}</div>
+        <div class="perf-team">${player.posTeam}</div>
+      </div>
+      <span class="perf-lvl-tag ${lvlClass}">${player.lvl}</span>
+    </div>
+    <div class="perf-stats">${pillsHtml}</div>
+    <div class="perf-opp">vs / @ ${opp}</div>
+    ${notableHtml}
+  `;
+  return card;
+}
+
+// ── Date navigation ───────────────────────────────────────────────────────────
+function shiftDate(dir) {
+  currentDateIdx = Math.max(0, Math.min(allDates.length - 1, currentDateIdx + dir));
+  render(allDates[currentDateIdx]);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+if (window.YESTERDAY_DATA) {
+  collectDates();
+  if (allDates.length) render(allDates[0]);
+  else document.getElementById('content-area').innerHTML = '<div class="no-games"><h3>No data available</h3><p>Stats will appear once the daily update runs.</p></div>';
+} else {
+  document.getElementById('content-area').innerHTML = '<div class="no-games"><h3>Data file not found</h3><p>Make sure yesterday_data.js is present.</p></div>';
+}
+</script>
+</body>
+</html>
