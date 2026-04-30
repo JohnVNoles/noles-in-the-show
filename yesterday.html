@@ -377,7 +377,8 @@ function buildCard({ player, headers, row, isPitcher, notable }) {
   const notableHtml = notable ? `<div class="notable-flag">⭐ Notable</div>` : '';
 
   const photoHtml = player.photo
-    ? `<img class="perf-photo" src="${player.photo}" alt="${player.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+    ? `<img class="perf-photo" src="${player.photo}" alt="${player.name}"
+         onerror="var t=this,s=t.src;if(!t.dataset.tried1){t.dataset.tried1=1;t.src=s.replace('/67/','/milb/');}else if(!t.dataset.tried2){t.dataset.tried2=1;t.src='https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png,q_auto:best,f_auto,w_120/v1/people/1/headshot/67/current';t.onerror=null;}">
        <div class="perf-photo-initials" style="display:none;">${player.initials || '??'}</div>`
     : `<div class="perf-photo-initials">${player.initials || '??'}</div>`;
 
