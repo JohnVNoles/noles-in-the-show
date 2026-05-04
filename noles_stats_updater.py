@@ -43,7 +43,8 @@ LEVEL_SPORT_ID = {
 }
 
 # Levels that skip API stat lookups entirely
-NO_STATS_LEVELS = {"Released", "60-Day IL", "7-Day IL", "15-Day IL", "Full Season IL", "Independent"}
+NO_STATS_LEVELS = {"Released", "60-Day IL", "7-Day IL", "Full Season IL", "Independent"}
+# 15-Day IL players are still on MLB rosters — fetch their stats/photo normally
 
 HEADERS = {"User-Agent": "BeyondHowser/1.0"}
 
@@ -1583,7 +1584,11 @@ def main():
             continue
 
         player["mlb_id"] = pid
-        stats_raw = get_player_stats(pid, SEASON, player.get("level", ""))
+        # For 15-Day IL, use base_level (MLB) for the API lookup so stats are fetched correctly
+        api_level = player.get("base_level") or player.get("level", "")
+        if api_level == "15-Day IL":
+            api_level = "MLB"
+        stats_raw = get_player_stats(pid, SEASON, api_level)
         # Fall back to manual override if API returned nothing useful
         api_empty = not stats_raw.get("hitting") and not stats_raw.get("pitching")
         if not stats_raw or api_empty:
