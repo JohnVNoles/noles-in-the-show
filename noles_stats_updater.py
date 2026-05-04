@@ -875,6 +875,25 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
 .nav-links a.active {{ background: rgba(206,184,136,0.2); color: var(--gold); font-weight: 600; }}
 .nav-updated {{ color: rgba(255,255,255,0.70); font-size: 0.72rem; margin-left: auto; white-space: nowrap; }}
 
+/* ── Hamburger ── */
+.nav-hamburger {{ display: none; background: none; border: none; cursor: pointer;
+  padding: 8px; margin-left: auto; color: white; flex-direction: column;
+  justify-content: center; align-items: center; gap: 5px; }}
+.nav-hamburger span {{ display: block; width: 22px; height: 2px; background: white;
+  border-radius: 2px; transition: all 0.25s; }}
+.nav-hamburger.open span:nth-child(1) {{ transform: translateY(7px) rotate(45deg); }}
+.nav-hamburger.open span:nth-child(2) {{ opacity: 0; }}
+.nav-hamburger.open span:nth-child(3) {{ transform: translateY(-7px) rotate(-45deg); }}
+.nav-mobile-menu {{ display: none; position: absolute; top: 100%; left: 0; right: 0;
+  background: var(--garnet-dark); border-top: 2px solid var(--gold);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.35); z-index: 200; }}
+.nav-mobile-menu a {{ display: block; color: rgba(255,255,255,0.85); text-decoration: none;
+  padding: 14px 20px; font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.07);
+  transition: background 0.15s; }}
+.nav-mobile-menu a:last-child {{ border-bottom: none; }}
+.nav-mobile-menu a:hover {{ background: rgba(255,255,255,0.08); }}
+.nav-mobile-menu a.gold-link {{ color: var(--gold); font-weight: 600; }}
+
 /* ── Hero ── */
 .hero {{ background: linear-gradient(135deg, var(--garnet-dark) 0%, var(--garnet) 55%, var(--garnet-light) 100%);
          padding: 28px 32px 24px; text-align: center; position: relative; overflow: hidden; }}
@@ -1056,9 +1075,11 @@ footer a {{ color: var(--gold); text-decoration: none; }}
 
 /* ── Responsive: Mobile (≤600px) ── */
 @media (max-width: 600px) {{
-  nav {{ padding: 0 16px; }}
+  nav {{ padding: 0 16px; position: relative; flex-wrap: wrap; }}
   .nav-links {{ display: none; }}
   .nav-updated {{ display: none; }}
+  .nav-hamburger {{ display: flex; }}
+  .nav-mobile-menu.open {{ display: block; width: 100%; }}
   .hero {{ padding: 20px 16px 18px; }}
   .hero h1 {{ font-size: 1.4rem; }}
   .hero-eyebrow {{ font-size: 0.65rem; }}
@@ -1172,7 +1193,7 @@ footer a {{ color: var(--gold); text-decoration: none; }}
 </div>
 
 <!-- Nav -->
-<nav>
+<nav style="position:relative; flex-wrap:wrap;">
   <a href="#home" class="nav-brand">
     <img class="nav-logo" src="logo.png" alt="Beyond Howser">
     <div>
@@ -1185,8 +1206,21 @@ footer a {{ color: var(--gold); text-decoration: none; }}
     <a href="#roster" class="nav-link">Roster</a>
     <a href="#news"   class="nav-link">News</a>
     <a href="#about"  class="nav-link">About</a>
+    <a href="yesterday.html" class="nav-link">Previous Day's Performance</a>
+    <a href="support.html" class="nav-link" style="color:var(--gold);font-weight:600;">Support FSU Baseball</a>
   </div>
   <span class="nav-updated">Updated {updated}</span>
+  <button class="nav-hamburger" id="navHamburger" aria-label="Open menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nav-mobile-menu" id="navMobileMenu">
+    <a href="#home">Home</a>
+    <a href="#roster">Roster</a>
+    <a href="#news">News</a>
+    <a href="#about">About</a>
+    <a href="yesterday.html">Previous Day's Performance</a>
+    <a href="support.html" class="gold-link">Support FSU Baseball</a>
+  </div>
 </nav>
 
 <!-- Hero -->
@@ -1482,6 +1516,25 @@ function applyFilters() {{
     row.classList.toggle('hidden', !lm || !nm);
   }});
 }}
+
+// ── Hamburger menu ──
+(function() {{
+  const btn = document.getElementById('navHamburger');
+  const menu = document.getElementById('navMobileMenu');
+  if (!btn || !menu) return;
+  btn.addEventListener('click', function() {{
+    const isOpen = menu.classList.toggle('open');
+    btn.classList.toggle('open', isOpen);
+    btn.setAttribute('aria-expanded', isOpen);
+  }});
+  menu.querySelectorAll('a').forEach(function(a) {{
+    a.addEventListener('click', function() {{
+      menu.classList.remove('open');
+      btn.classList.remove('open');
+      btn.setAttribute('aria-expanded', false);
+    }});
+  }});
+}})();
 </script>
 </body>
 </html>"""
