@@ -863,8 +863,16 @@ def post_to_x(drafts: list[dict]) -> bool:
     Post the top-priority draft to X (@BeyondHowser) automatically.
     Requires env vars: X_CONSUMER_KEY, X_CONSUMER_SECRET,
                        X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET
+    Controlled by X_AUTO_POST variable (must be exactly "true" to post).
     Returns True if posted successfully.
     """
+    # Check the X_AUTO_POST flag — defaults to off for safety
+    auto_post = os.environ.get("X_AUTO_POST", "false").strip().lower()
+    if auto_post != "true":
+        print("  ℹ X_AUTO_POST is not 'true' — skipping auto-post (draft-only mode)")
+        print("    To enable: set X_AUTO_POST to 'true' in GitHub Actions variables")
+        return False
+
     if not TWEEPY_AVAILABLE:
         print("  ! tweepy not installed — skipping X auto-post")
         return False
