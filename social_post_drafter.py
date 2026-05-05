@@ -30,6 +30,13 @@ from pathlib import Path
 
 import requests
 
+# ── X (Twitter) posting via tweepy ───────────────────────────────────────────
+try:
+    import tweepy
+    TWEEPY_AVAILABLE = True
+except ImportError:
+    TWEEPY_AVAILABLE = False
+
 # ── Config ────────────────────────────────────────────────────────────────────
 BASE_DIR        = Path(__file__).parent
 CACHE_PATH      = BASE_DIR / "player_id_cache.json"
@@ -850,6 +857,62 @@ def log_drafts(drafts: list[dict]):
     save_drafts(history)
     print(f"  ✓ Drafts logged to {DRAFTS_PATH.name}")
 
+# ── X (Twitter) auto-poster ──────────────────────────────────────────────────
+def post_to_x(drafts: list[dict]) -> bool:
+    """
+    Post the top-priority draft to X (@BeyondHowser) automatically.
+    Requires env vars: X_CONSUMER_KEY, X_CONSUMER_SECRET,
+                       X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET
+    Returns True if posted successfully.
+    """
+    if not TWEEPY_AVAILABLE:
+        print("  ! tweepy not installed — skipping X auto-post")
+        return False
+
+    consumer_key    = os.environ.get("X_CONSUMER_KEY", "")
+    consumer_secret = os.environ.get("X_CONSUMER_SECRET", "")
+    access_token    = os.environ.get("X_ACCESS_TOKEN", "")
+    access_secret   = os.environ.get("X_ACCESS_TOKEN_SECRET", "")
+
+    if not all([consumer_key, consumer_secret, access_token, access_secret]):
+        print("  ! X API credentials not found in environment — skipping auto-post")
+        return False
+
+    if not drafts:
+        print("  ! No drafts to post to X")
+        return False
+
+    # Pick the top-priority draft
+    best = drafts[0]
+    post_text = best.get("x_post", "").strip()
+
+    if not post_text:
+        print("  ! Top draft has no X post text — skipping")
+        return False
+
+    # Enforce 280-char limit
+    if len(post_text) > 280:
+        post_text = post_text[:277] + "..."
+
+    print(f"  → Posting to X ({len(post_text)} chars): [{best['type']} — {best['player']}]")
+
+    try:
+        client = tweepy.Client(
+            consumer_key=consumer_key,
+            consumer_secret=consumer_secret,
+            access_token=access_token,
+            access_token_secret=access_secret,
+        )
+        response = client.create_tweet(text=post_text)
+        tweet_id = response.data["id"]
+        print(f"  ✓ Posted to X! Tweet ID: {tweet_id}")
+        print(f"    https://x.com/BeyondHowser/status/{tweet_id}")
+        return True
+    except Exception as e:
+        print(f"  ! X post failed: {e}")
+        return False
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 def main():
     print(f"\n{'='*55}")
@@ -887,11 +950,18 @@ def main():
     print("→ Writing HTML email body...")
     write_email_body(drafts)
 
+    print("→ Auto-posting top draft to X (@BeyondHowser)...")
+    x_posted = post_to_x(drafts)
+    if not x_posted:
+        print("  (X post skipped — check credentials or install tweepy)")
+
     print("→ Sending to Teams (if webhook configured)...")
     send_to_teams(drafts)
 
     print(f"\n{'='*55}")
     print(f"  ✅ Done! {len(drafts)} post draft(s) ready for review.")
+    if x_posted:
+        print(f"  🐦 Top draft was auto-posted to X.")
     print(f"{'='*55}\n")
 
 if __name__ == "__main__":
