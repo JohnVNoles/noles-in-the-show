@@ -19,7 +19,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install openpyxl requests
+        run: pip install openpyxl requests tweepy
 
       - name: Run stats updater
         run: python noles_stats_updater.py
@@ -55,6 +55,11 @@ jobs:
           git push
 
       - name: Run social post drafter
+        env:
+          X_CONSUMER_KEY: ${{ secrets.X_CONSUMER_KEY }}
+          X_CONSUMER_SECRET: ${{ secrets.X_CONSUMER_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
         run: python social_post_drafter.py
 
       - name: Set today date
