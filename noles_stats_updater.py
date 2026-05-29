@@ -1005,7 +1005,8 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
 /* ── Card grid ── */
 .grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }}
 .card {{ background: white; border-radius: 10px; overflow: hidden;
-         box-shadow: var(--shadow); transition: transform .15s, box-shadow .15s; }}
+         box-shadow: var(--shadow); transition: transform .15s, box-shadow .15s;
+         display: flex; flex-direction: column; }}
 .card:hover {{ transform: translateY(-2px); box-shadow: 0 6px 20px rgba(120,47,64,0.15); }}
 .card.hidden {{ display: none; }}
 .card-header {{ padding: 14px 16px; color: white; display: flex; align-items: center; gap: 12px; }}
@@ -1017,7 +1018,7 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
 .card-org  {{ font-size: 0.65rem; opacity: 0.75; margin-top: 3px; font-style: italic; }}
 .card-level {{ font-size: 0.68rem; font-weight: 700; letter-spacing: .5px;
                text-transform: uppercase; padding: 6px 16px 0; }}
-.card-stats {{ display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px 12px 14px; gap: 6px; }}
+.card-stats {{ display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px 12px 14px; gap: 6px; flex: 1; align-content: start; }}
 .stat {{ text-align: center; }}
 .stat-val {{ font-size: 1rem; font-weight: 700; color: var(--garnet); }}
 .stat-lbl {{ font-size: 0.62rem; color: #999; text-transform: uppercase; margin-top: 1px; }}
