@@ -1040,7 +1040,7 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
 .card-org  {{ font-size: 0.65rem; opacity: 0.75; margin-top: 3px; font-style: italic; }}
 .card-level {{ font-size: 0.68rem; font-weight: 700; letter-spacing: .5px;
                text-transform: uppercase; padding: 6px 16px 0; }}
-.card-stats {{ display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px 12px 14px; gap: 6px; flex: 1; align-content: start; }}
+.card-stats {{ display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px 12px 14px; gap: 6px; flex: 1; align-content: start; min-height: 120px; }}
 .stat {{ text-align: center; }}
 .stat-val {{ font-size: 1rem; font-weight: 700; color: var(--garnet); }}
 .stat-lbl {{ font-size: 0.62rem; color: #999; text-transform: uppercase; margin-top: 1px; }}
@@ -1113,7 +1113,7 @@ footer a {{ color: var(--gold); text-decoration: none; }}
   .view-toggle {{ margin-left: 0; }}
   .roster-layout {{ padding: 12px 8px; }}
   .grid {{ grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }}
-  .card-stats {{ grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 8px 8px 10px; }}
+  .card-stats {{ grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 8px 8px 10px; min-height: 100px; }}
   .stat-val {{ font-size: 0.85rem; }}
   .stat-lbl {{ font-size: 0.55rem; }}
   .card-photo {{ width: 42px; height: 42px; }}
