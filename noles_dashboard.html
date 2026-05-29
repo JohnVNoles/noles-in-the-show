@@ -183,7 +183,7 @@ nav { background: var(--garnet); padding: 0 32px; display: flex; align-items: ce
 .card-org  { font-size: 0.65rem; opacity: 0.75; margin-top: 3px; font-style: italic; }
 .card-level { font-size: 0.68rem; font-weight: 700; letter-spacing: .5px;
                text-transform: uppercase; padding: 6px 16px 0; }
-.card-stats { display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px 12px 14px; gap: 6px; flex: 1; align-content: start; }
+.card-stats { display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px 12px 14px; gap: 6px; flex: 1; align-content: start; min-height: 120px; }
 .stat { text-align: center; }
 .stat-val { font-size: 1rem; font-weight: 700; color: var(--garnet); }
 .stat-lbl { font-size: 0.62rem; color: #999; text-transform: uppercase; margin-top: 1px; }
@@ -256,7 +256,7 @@ footer a { color: var(--gold); text-decoration: none; }
   .view-toggle { margin-left: 0; }
   .roster-layout { padding: 12px 8px; }
   .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
-  .card-stats { grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 8px 8px 10px; }
+  .card-stats { grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 8px 8px 10px; min-height: 100px; }
   .stat-val { font-size: 0.85rem; }
   .stat-lbl { font-size: 0.55rem; }
   .card-photo { width: 42px; height: 42px; }
@@ -369,7 +369,7 @@ footer a { color: var(--gold); text-decoration: none; }
     <a href="yesterday.html" class="nav-link">Previous Day's Performance</a>
     <a href="support.html" class="nav-link" style="color:var(--gold);font-weight:600;">Support FSU Baseball</a>
   </div>
-  <span class="nav-updated">Updated May 29, 2026 at 10:38 PM</span>
+  <span class="nav-updated">Updated May 29, 2026 at 10:44 PM</span>
   <button class="nav-hamburger" id="navHamburger" aria-label="Open menu" aria-expanded="false">
     <span></span><span></span><span></span>
   </button>
@@ -394,7 +394,7 @@ footer a { color: var(--gold); text-decoration: none; }
       <div class="hero-stat"><div class="num">23</div><div class="lbl">Organizations</div></div>
       <div class="hero-stat"><div class="num">2026</div><div class="lbl">Season</div></div>
     </div>
-    <div class="hero-updated">📅 Stats last updated: <strong>May 29, 2026 at 10:38 PM ET</strong></div>
+    <div class="hero-updated">📅 Stats last updated: <strong>May 29, 2026 at 10:44 PM ET</strong></div>
   </div>
 </section>
 
@@ -444,7 +444,7 @@ footer a { color: var(--gold); text-decoration: none; }
 <button class="filter-btn" data-color="#5a5a5a" onclick="filterLevel('Independent',this)">Independent</button>
 
   <input class="search-box" type="text" placeholder="Search player…" oninput="applySearch(this.value)">
-  <span class="controls-updated">Updated May 29, 2026 at 10:38 PM ET</span>
+  <span class="controls-updated">Updated May 29, 2026 at 10:44 PM ET</span>
   <div class="view-toggle">
     <button class="view-btn active" id="btnCards" onclick="setView('cards')">⊞ Cards</button>
     <button class="view-btn" id="btnList"  onclick="setView('list')">≡ List</button>
