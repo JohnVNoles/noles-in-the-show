@@ -107,27 +107,50 @@ def find_player_id(name: str, cache: dict) -> int | None:
         return None
 
 # ── Stats Fetching ────────────────────────────────────────────────────────────
+# Fallback order: try the player's current level first, then all others
+ALL_SPORT_IDS = [1, 11, 12, 13, 14, 15, 16]
+
+def _fetch_stat_group(person_id: int, season: int, group: str, sport_id: int) -> dict:
+    """Single API call for one stat group + sport_id. Returns stat dict or {}."""
+    try:
+        r = requests.get(
+            f"{MLB_API}/people/{person_id}/stats",
+            params={"stats": "season", "season": season,
+                    "group": group, "sportId": sport_id},
+            headers=HEADERS, timeout=10
+        )
+        r.raise_for_status()
+        splits = r.json().get("stats", [])
+        if splits and splits[0].get("splits"):
+            return splits[0]["splits"][0].get("stat", {})
+    except Exception as e:
+        print(f"    ! Stats error for {person_id} ({group} sportId={sport_id}): {e}")
+    return {}
+
 def get_player_stats(person_id: int, season: int, level: str = "") -> dict:
-    """Fetch hitting and pitching stats using the player's level to target
-    the correct sport ID (e.g. AAA=11, AA=12) for a clean single API call."""
+    """Fetch hitting and pitching stats. Tries the player's current level's
+    sport_id first; if that returns nothing, falls back through all sport IDs
+    so that recently-promoted/demoted players still get stats."""
     stats = {"hitting": {}, "pitching": {}, "season_used": season}
-    sport_id = LEVEL_SPORT_ID.get(level)
-    if sport_id is None:
-        return stats  # Independent league or unknown — no API data available
+    primary_sport_id = LEVEL_SPORT_ID.get(level)
+    if primary_sport_id is None:
+        return stats  # Independent/Released/IL — no API data available
+
     for group in ("hitting", "pitching"):
-        try:
-            r = requests.get(
-                f"{MLB_API}/people/{person_id}/stats",
-                params={"stats": "season", "season": season,
-                        "group": group, "sportId": sport_id},
-                headers=HEADERS, timeout=10
-            )
-            r.raise_for_status()
-            splits = r.json().get("stats", [])
-            if splits and splits[0].get("splits"):
-                stats[group] = splits[0]["splits"][0].get("stat", {})
-        except Exception as e:
-            print(f"    ! Stats error for {person_id} ({group}): {e}")
+        # Try primary sport_id first
+        result = _fetch_stat_group(person_id, season, group, primary_sport_id)
+        if result:
+            stats[group] = result
+            continue
+        # Fallback: try all other sport IDs (handles promotions/demotions)
+        for sid in ALL_SPORT_IDS:
+            if sid == primary_sport_id:
+                continue
+            result = _fetch_stat_group(person_id, season, group, sid)
+            if result:
+                stats[group] = result
+                print(f"    ↳ fallback hit: sportId={sid} for {person_id} ({group})", end=" ", flush=True)
+                break
     return stats
 
 # ── Read Roster from Excel ────────────────────────────────────────────────────
@@ -215,28 +238,30 @@ def is_pitcher(position: str) -> bool:
 
 # ── Game Log Fetching ─────────────────────────────────────────────────────────
 def get_game_log(person_id: int, season: int, level: str = "", limit: int = 5) -> list[dict]:
-    """Fetch recent game-by-game log for a player. Returns list of game dicts."""
-    sport_id = LEVEL_SPORT_ID.get(level)
-    if sport_id is None:
+    """Fetch recent game-by-game log for a player. Returns list of game dicts.
+    Tries the player's primary sport_id first, then falls back through all others."""
+    primary_sport_id = LEVEL_SPORT_ID.get(level)
+    if primary_sport_id is None:
         return []
-    pitcher = None  # determined from results
+    sport_ids_to_try = [primary_sport_id] + [s for s in ALL_SPORT_IDS if s != primary_sport_id]
     games = []
     for group in ("pitching", "hitting"):
-        try:
-            r = requests.get(
-                f"{MLB_API}/people/{person_id}/stats",
-                params={"stats": "gameLog", "season": season,
-                        "group": group, "sportId": sport_id,
-                        "hydrate": "opponent"},
-                headers=HEADERS, timeout=10
-            )
-            r.raise_for_status()
-            splits = r.json().get("stats", [])
-            if splits and splits[0].get("splits"):
+        for sport_id in sport_ids_to_try:
+            try:
+                r = requests.get(
+                    f"{MLB_API}/people/{person_id}/stats",
+                    params={"stats": "gameLog", "season": season,
+                            "group": group, "sportId": sport_id,
+                            "hydrate": "opponent"},
+                    headers=HEADERS, timeout=10
+                )
+                r.raise_for_status()
+                splits = r.json().get("stats", [])
+                if not (splits and splits[0].get("splits")):
+                    continue  # try next sport_id
                 raw = splits[0]["splits"]
-                for s in reversed(raw[-limit:]):  # most recent last → reverse to get newest first
+                for s in reversed(raw[-limit:]):
                     g = s.get("stat", {})
-                    game_info = s.get("game", {})
                     team_info = s.get("opponent", {})
                     raw_date  = s.get("date", "")[:10]
                     date_str  = (f"{raw_date[5:7]}-{raw_date[8:10]}-{raw_date[:4]}"
@@ -266,17 +291,14 @@ def get_game_log(person_id: int, season: int, level: str = "", limit: int = 5) -
                         avg = f"{h/ab:.3f}".lstrip("0") if ab else "—"
                         games.append({
                             "date": date_str, "opp": opp_label, "group": "hitting",
-                            "AB":  str(ab),
-                            "H":   str(h),
-                            "HR":  str(hr),
-                            "RBI": str(rbi),
-                            "BB":  str(bb),
-                            "AVG": avg,
+                            "AB":  str(ab), "H": str(h), "HR": str(hr),
+                            "RBI": str(rbi), "BB": str(bb), "AVG": avg,
                         })
-                if games:
-                    break  # got data from this group, don't need the other
-        except Exception as e:
-            print(f"    ! Game log error for {person_id} ({group}): {e}")
+                break  # got data from this sport_id for this group
+            except Exception as e:
+                print(f"    ! Game log error for {person_id} ({group} sportId={sport_id}): {e}")
+        if games:
+            break  # got data from this group, don't try the other
     return games[:limit]
 
 
@@ -1598,7 +1620,7 @@ def main():
                 print(f"(manual override) ", end="", flush=True)
             else:
                 print("no stats")
-                player_data.append({**player, "stats_fmt": {}, "mlb_id": pid})
+                player_data.append({**player, "stats_fmt": {}, "mlb_id": pid, "game_log": []})
                 continue
 
         pitcher = is_pitcher(player.get("position", ""))
