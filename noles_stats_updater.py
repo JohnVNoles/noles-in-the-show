@@ -872,12 +872,12 @@ def generate_html(player_data: list[dict], news_html: str = ""):
   --shadow: 0 2px 12px rgba(120,47,64,0.10);
 }}
 *,*::before,*::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
-html {{ scroll-behavior: smooth; }}
+html {{ scroll-behavior: smooth; scroll-padding-top: 120px; }}
 body {{ font-family: 'Segoe UI', system-ui, sans-serif; background: var(--cream); color: #1a1a1a; line-height: 1.5; }}
 
 /* ── Nav ── */
 nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: center;
-       justify-content: space-between; position: sticky; top: 0; z-index: 100;
+       justify-content: space-between; position: sticky; top: 0; z-index: 500;
        box-shadow: 0 2px 8px rgba(0,0,0,0.25); }}
 .nav-brand {{ display: flex; align-items: center; gap: 10px; padding: 14px 0; text-decoration: none; }}
 .nav-logo {{ width: 42px; height: 42px; border-radius: 6px; flex-shrink: 0;
@@ -975,7 +975,7 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
 /* ── Controls bar ── */
 .controls {{ background: white; padding: 14px 32px; border-bottom: 1px solid var(--border);
              display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
-             box-shadow: 0 1px 4px rgba(0,0,0,0.05); position: sticky; top: 64px; z-index: 90; }}
+             box-shadow: 0 1px 4px rgba(0,0,0,0.05); position: sticky; top: 64px; z-index: 490; }}
 .controls-label {{ font-size: 0.78rem; font-weight: 700; color: #888;
                     text-transform: uppercase; letter-spacing: 0.05em; margin-right: 4px; }}
 .filter-btn {{ padding: 5px 13px; border: 1.5px solid #ccc; background: white;
@@ -1025,7 +1025,7 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
 .links-list .link-sub {{ font-size: 0.72rem; color: #aaa; display: block; margin-top: 1px; }}
 
 /* ── Card grid ── */
-.grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }}
+.grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; align-items: start; }}
 .card {{ background: white; border-radius: 10px; overflow: hidden;
          box-shadow: var(--shadow); transition: transform .15s, box-shadow .15s;
          display: flex; flex-direction: column; }}
@@ -1040,7 +1040,7 @@ nav {{ background: var(--garnet); padding: 0 32px; display: flex; align-items: c
 .card-org  {{ font-size: 0.65rem; opacity: 0.75; margin-top: 3px; font-style: italic; }}
 .card-level {{ font-size: 0.68rem; font-weight: 700; letter-spacing: .5px;
                text-transform: uppercase; padding: 6px 16px 0; }}
-.card-stats {{ display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px 12px 14px; gap: 6px; flex: 1; align-content: start; min-height: 120px; }}
+.card-stats {{ display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px 12px 14px; gap: 6px; align-content: start; }}
 .stat {{ text-align: center; }}
 .stat-val {{ font-size: 1rem; font-weight: 700; color: var(--garnet); }}
 .stat-lbl {{ font-size: 0.62rem; color: #999; text-transform: uppercase; margin-top: 1px; }}
@@ -1113,7 +1113,7 @@ footer a {{ color: var(--gold); text-decoration: none; }}
   .view-toggle {{ margin-left: 0; }}
   .roster-layout {{ padding: 12px 8px; }}
   .grid {{ grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }}
-  .card-stats {{ grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 8px 8px 10px; min-height: 100px; }}
+  .card-stats {{ grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 8px 8px 10px; }}
   .stat-val {{ font-size: 0.85rem; }}
   .stat-lbl {{ font-size: 0.55rem; }}
   .card-photo {{ width: 42px; height: 42px; }}
