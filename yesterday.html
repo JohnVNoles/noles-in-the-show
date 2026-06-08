@@ -283,12 +283,7 @@ function collectDates() {
 
 // ── Render ────────────────────────────────────────────────────────────────────
 function render(dateStr) {
-  const isMostRecent = currentDateIdx === 0;
   document.getElementById('hero-date').textContent = formatDateDisplay(dateStr);
-  document.getElementById('date-label').textContent = isMostRecent
-    ? 'Most Recent Day' : formatDateDisplay(dateStr).split(',')[0] + ', ' + formatDateDisplay(dateStr).split(',').slice(1).join(',').trim();
-  document.getElementById('btn-next').disabled = currentDateIdx === 0;
-  document.getElementById('btn-prev').disabled = currentDateIdx >= allDates.length - 1;
 
   const players = (window.YESTERDAY_DATA || []);
   const mlbPerfs = [], milbPerfs = [];
@@ -417,11 +412,6 @@ function buildCard({ player, headers, row, isPitcher, notable }) {
   return card;
 }
 
-// ── Date navigation ───────────────────────────────────────────────────────────
-function shiftDate(dir) {
-  currentDateIdx = Math.max(0, Math.min(allDates.length - 1, currentDateIdx + dir));
-  render(allDates[currentDateIdx]);
-}
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 if (window.YESTERDAY_DATA) {
