@@ -1,34 +1,5 @@
 [
   {
-    "date": "2026-05-16",
-    "drafts": [
-      {
-        "priority": 3,
-        "type": "hot_streak",
-        "player": "James Tibbs III",
-        "source": "Game log \u2014 last 2 games",
-        "x_post": "\ud83d\udd25 James Tibbs III | OF | AAA \u2014 Los Angeles Dodgers\n\nLast 2 games: 5-for-9, 3 RBI\n\nJames Tibbs III is on a tear right now \u2014 5 hits over his last 2 games.\n\nbeyondhowser.com | #FSU #Seminoles #BeyondHowser #FSUBaseball",
-        "ig_caption": "\ud83d\udd25 James Tibbs III has been locked in at the plate, collecting 5 hits over his last 2 games.\n\nThe former Florida State Seminole is currently playing for the Oklahoma City Comets at AAA.\n\n\ud83d\udcca Last 2 games:\n@ ALB: 2-for-4  |  @ ALB: 3-for-5, 3 RBI\n\nDaily stats for every former Nole at beyondhowser.com\n\n#FSU #Seminoles #BeyondHowser #FSUBaseball #MiLB #MLB #ProBall #BaseballTwitter #GoNoles"
-      },
-      {
-        "priority": 3,
-        "type": "hot_streak",
-        "player": "CJ Van Eyk",
-        "source": "Game log \u2014 last 2 games",
-        "x_post": "\ud83d\udd25 CJ Van Eyk | RHP | AAA \u2014 Toronto Blue Jays\n\nLast 2 outings: 9.3 IP | 2 ER | 9 K\n\nCJ Van Eyk is locked in right now \u2014 strong back-to-back outings.\n\nbeyondhowser.com | #FSU #Seminoles #BeyondHowser #FSUBaseball",
-        "ig_caption": "\ud83d\udd25 CJ Van Eyk is putting together back-to-back quality starts at AAA.\n\nThe former Florida State RHP is currently pitching for the Buffalo Bisons at AAA.\n\n\ud83d\udcca Last 2 starts:\n@ LEH: 3.2 IP, 0 ER, 7 K  |  vs WOR: 6.1 IP, 2 ER, 2 K\n\nDaily stats for every former Nole at beyondhowser.com\n\n#FSU #Seminoles #BeyondHowser #FSUBaseball #MiLB #MLB #ProBall #BaseballTwitter #GoNoles"
-      },
-      {
-        "priority": 3,
-        "type": "hot_streak",
-        "player": "Jaxson West",
-        "source": "Game log \u2014 last 2 games",
-        "x_post": "\ud83d\udd25 Jaxson West | C | Low-A \u2014 Toronto Blue Jays\n\nLast 2 games: 5-for-8, 1 RBI\n\nJaxson West is on a tear right now \u2014 5 hits over his last 2 games.\n\nbeyondhowser.com | #FSU #Seminoles #BeyondHowser #FSUBaseball",
-        "ig_caption": "\ud83d\udd25 Jaxson West has been locked in at the plate, collecting 5 hits over his last 2 games.\n\nThe former Florida State Seminole is currently playing for the Dunedin Blue Jays at Low-A.\n\n\ud83d\udcca Last 2 games:\nvs CLE: 2-for-4  |  vs CLE: 3-for-4, 1 RBI\n\nDaily stats for every former Nole at beyondhowser.com\n\n#FSU #Seminoles #BeyondHowser #FSUBaseball #MiLB #MLB #ProBall #BaseballTwitter #GoNoles"
-      }
-    ]
-  },
-  {
     "date": "2026-05-17",
     "drafts": [
       {
@@ -958,6 +929,35 @@
   },
   {
     "date": "2026-06-15",
+    "drafts": [
+      {
+        "priority": 3,
+        "type": "hot_streak",
+        "player": "Jackson Baumeister",
+        "source": "Game log \u2014 last 2 games",
+        "x_post": "\ud83d\udd25 Jackson Baumeister | RHP | AA \u2014 Tampa Bay Rays\n\nLast 2 outings: 9.4 IP | 2 ER | 16 K\n\nJackson Baumeister is locked in right now \u2014 strong back-to-back outings.\n\nbeyondhowser.com | #FSU #Seminoles #BeyondHowser #FSUBaseball",
+        "ig_caption": "\ud83d\udd25 Jackson Baumeister is putting together back-to-back quality starts at AA.\n\nThe former Florida State RHP is currently pitching for the Montgomery Biscuits at AA.\n\n\ud83d\udcca Last 2 starts:\n@ BIL: 4.2 IP, 0 ER, 7 K  |  vs KNO: 5.2 IP, 2 ER, 9 K\n\nDaily stats for every former Nole at beyondhowser.com\n\n#FSU #Seminoles #BeyondHowser #FSUBaseball #MiLB #MLB #ProBall #BaseballTwitter #GoNoles"
+      },
+      {
+        "priority": 4,
+        "type": "pitching",
+        "player": "Luke Weaver",
+        "source": "Stats API \u2014 2.40 ERA, 30.0 IP",
+        "x_post": "\u26be Luke Weaver | RHP | MLB \u2014 New York Mets\n\n2.40 ERA | 30.0 IP | 27 K | 0.93 WHIP\n\nLuke Weaver is off to a strong start at MLB this season.\n\nFull stats: beyondhowser.com | #FSU #Seminoles",
+        "ig_caption": "\u26be Luke Weaver is putting together a strong start to the 2026 campaign.\n\nThe former Florida State RHP is pitching for the New York Mets at MLB.\n\n\ud83d\udcca 2.40 ERA | 30.0 IP | 27 K | 0.93 WHIP\n\nTrack all your former Noles at beyondhowser.com \u2014 stats update every morning.\n\n#FSU #Seminoles #BeyondHowser #FSUBaseball #MiLB #MLB #ProBall #BaseballTwitter #GoNoles"
+      },
+      {
+        "priority": 4,
+        "type": "pitching",
+        "player": "Parker Messick",
+        "source": "Stats API \u2014 2.68 ERA, 80.2 IP",
+        "x_post": "\u26be Parker Messick | LHP | MLB \u2014 Cleveland Guardians\n\n2.68 ERA | 80.2 IP | 82 K | 1.09 WHIP\n\nParker Messick is off to a strong start at MLB this season.\n\nFull stats: beyondhowser.com | #FSU #Seminoles",
+        "ig_caption": "\u26be Parker Messick is putting together a strong start to the 2026 campaign.\n\nThe former Florida State LHP is pitching for the Cleveland Guardians at MLB.\n\n\ud83d\udcca 2.68 ERA | 80.2 IP | 82 K | 1.09 WHIP\n\nTrack all your former Noles at beyondhowser.com \u2014 stats update every morning.\n\n#FSU #Seminoles #BeyondHowser #FSUBaseball #MiLB #MLB #ProBall #BaseballTwitter #GoNoles"
+      }
+    ]
+  },
+  {
+    "date": "2026-06-16",
     "drafts": [
       {
         "priority": 3,
